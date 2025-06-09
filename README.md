@@ -1,7 +1,7 @@
 # 🦀 doksnet
 
-[![CI](https://github.com/username/doksnet/workflows/CI/badge.svg)](https://github.com/username/doksnet/actions)
-[![Quick Check](https://github.com/username/doksnet/workflows/Quick%20Check/badge.svg)](https://github.com/username/doksnet/actions)
+[![CI](https://github.com/username/doksnet/workflows/CI/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/ci.yml)
+[![Quick Check](https://github.com/username/doksnet/workflows/Quick%20Check/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/quick-check.yml)
 [![Crates.io](https://img.shields.io/crates/v/doksnet.svg)](https://crates.io/crates/doksnet)
 [![Documentation](https://docs.rs/doksnet/badge.svg)](https://docs.rs/doksnet)
 
