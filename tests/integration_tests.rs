@@ -46,8 +46,8 @@ fn test_new_command_creates_doks_file() {
     assert!(doks_path.exists());
 
     let content = fs::read_to_string(doks_path).unwrap();
-    assert!(content.contains("version = \"0.1.0\""));
-    assert!(content.contains("default_doc = \"README.md\""));
+    assert!(content.contains("version=0.1.0"));
+    assert!(content.contains("default_doc=README.md"));
 }
 
 // Commented out because it requires interactive input which doesn't work in CI
@@ -258,13 +258,13 @@ fn test_test_command_with_changed_content() {
 // Helper functions
 
 fn create_basic_doks_file(dir: &tempfile::TempDir) {
-    let doks_content = r#"
-version = "0.1.0"
-default_doc = "README.md"
-mappings = []
-"#;
+    let doks_content = r#"# .doks v2 - Compact format
+version=0.1.0
+default_doc=README.md
+
+# Format: id|doc_partition|code_partition|doc_hash|code_hash|description"#;
     let doks_path = dir.path().join(".doks");
-    fs::write(doks_path, doks_content.trim()).unwrap();
+    fs::write(doks_path, doks_content).unwrap();
 }
 
 fn create_doks_with_mapping(dir: &tempfile::TempDir, doc_partition: &str, code_partition: &str) {
@@ -312,21 +312,15 @@ fn create_doks_with_mapping(dir: &tempfile::TempDir, doc_partition: &str, code_p
     let code_hash = blake3::hash(code_content.as_bytes()).to_hex().to_string();
 
     let doks_content = format!(
-        r#"
-version = "0.1.0"
-default_doc = "README.md"
+        r#"# .doks v2 - Compact format
+version=0.1.0
+default_doc=README.md
 
-[[mappings]]
-id = "test-mapping-123"
-doc_partition = "{}"
-code_partition = "{}"
-doc_hash = "{}"
-code_hash = "{}"
-description = "Test mapping"
-"#,
+# Format: id|doc_partition|code_partition|doc_hash|code_hash|description
+test-mapping-123|{}|{}|{}|{}|Test mapping"#,
         doc_partition, code_partition, doc_hash, code_hash
     );
 
     let doks_path = dir.path().join(".doks");
-    fs::write(doks_path, doks_content.trim()).unwrap();
+    fs::write(doks_path, doks_content).unwrap();
 }

@@ -161,18 +161,23 @@ Partitions use this lightweight format to reference file ranges:
 
 ## 📁 .doks File Structure
 
-```toml
-version = "0.1.0"
-default_doc = "README.md"
+The `.doks` file uses a compact, machine-optimized format:
 
-[[mappings]]
-id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-doc_partition = "README.md:10-15"
-code_partition = "src/lib.rs:20-35"
-doc_hash = "abc123def456..."
-code_hash = "789xyz012abc..."
-description = "API usage example"
 ```
+# .doks v2 - Compact format
+version=0.2.0
+default_doc=README.md
+
+# Format: id|doc_partition|code_partition|doc_hash|code_hash|description
+a1b2c3d4|README.md:10-15|src/lib.rs:20-35|abc123def456...|789xyz012abc...|API usage example
+main-func|README.md:25-30|src/main.rs:1-10|fedcba987654...|123456789abc...|Main function example
+```
+
+**Benefits of the compact format:**
+- 📦 **5x smaller** than TOML (faster parsing, less storage)
+- ⚡ **Machine-optimized** (perfect for automation)
+- 🔧 **Grep-friendly** (easy to analyze with standard tools)
+- 🚀 **Simple parsing** (no complex dependencies)
 
 ## 🔄 Typical Workflow
 

@@ -48,28 +48,22 @@ mod command_unit_tests {
         let dir = tempdir().unwrap();
 
         // Create a .doks file manually and verify it parses correctly
-        let doks_content = r#"
-version = "0.1.0"
-default_doc = "README.md"
+        let doks_content = r#"# .doks v2 - Compact format
+version=0.1.0
+default_doc=README.md
 
-[[mappings]]
-id = "test-id-123"
-doc_partition = "README.md:1-2"
-code_partition = "src/main.rs:1-2"
-doc_hash = "abcdef123456"
-code_hash = "fedcba654321"
-description = "Test mapping between readme and main"
-"#;
+# Format: id|doc_partition|code_partition|doc_hash|code_hash|description
+test-id-123|README.md:1-2|src/main.rs:1-2|abcdef123456|fedcba654321|Test mapping between readme and main"#;
 
         let doks_path = dir.path().join(".doks");
-        fs::write(&doks_path, doks_content.trim()).unwrap();
+        fs::write(&doks_path, doks_content).unwrap();
 
         // Parse and verify
         let parsed_content = fs::read_to_string(&doks_path).unwrap();
-        assert!(parsed_content.contains("version = \"0.1.0\""));
-        assert!(parsed_content.contains("default_doc = \"README.md\""));
-        assert!(parsed_content.contains("[[mappings]]"));
-        assert!(parsed_content.contains("test-id-123"));
+        assert!(parsed_content.contains("version=0.1.0"));
+        assert!(parsed_content.contains("default_doc=README.md"));
+        assert!(parsed_content.contains("test-id-123|README.md:1-2|src/main.rs:1-2"));
+        assert!(parsed_content.contains("Test mapping between readme and main"));
     }
 
     #[test]

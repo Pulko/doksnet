@@ -171,18 +171,12 @@ fn add_realistic_mapping(dir: &tempfile::TempDir) {
     let code_hash = blake3::hash(code_content.as_bytes()).to_hex().to_string();
 
     let doks_content = format!(
-        r#"
-version = "0.1.0"
-default_doc = "README.md"
+        r#"# .doks v2 - Compact format
+version=0.1.0
+default_doc=README.md
 
-[[mappings]]
-id = "main-function-example"
-doc_partition = "README.md:11-15"
-code_partition = "src/main.rs:3-7"
-doc_hash = "{}"
-code_hash = "{}"
-description = "Main function documentation example"
-"#,
+# Format: id|doc_partition|code_partition|doc_hash|code_hash|description
+main-function-example|README.md:11-15|src/main.rs:3-7|{}|{}|Main function documentation example"#,
         doc_hash, code_hash
     );
 
@@ -299,26 +293,13 @@ fn add_multiple_mappings(dir: &tempfile::TempDir) {
         .to_string();
 
     let doks_content = format!(
-        r#"
-version = "0.1.0"
-default_doc = "README.md"
+        r#"# .doks v2 - Compact format
+version=0.1.0
+default_doc=README.md
 
-[[mappings]]
-id = "add-function-example"
-doc_partition = "README.md:5-7"
-code_partition = "src/lib.rs:1-3"
-doc_hash = "{}"
-code_hash = "{}"
-description = "Add function example"
-
-[[mappings]]
-id = "main-function-example"
-doc_partition = "README.md:11-13"
-code_partition = "src/main.rs:3-5"
-doc_hash = "{}"
-code_hash = "{}"
-description = "Main function example"
-"#,
+# Format: id|doc_partition|code_partition|doc_hash|code_hash|description
+add-function-example|README.md:5-7|src/lib.rs:1-3|{}|{}|Add function example
+main-function-example|README.md:11-13|src/main.rs:3-5|{}|{}|Main function example"#,
         add_doc_hash, add_code_hash, main_doc_hash, main_code_hash
     );
 

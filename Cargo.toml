@@ -1,6 +1,6 @@
 [package]
 name = "doksnet"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Fedor Tkachenko <vzdbovich@gmail.com>"]
 description = "A CLI tool for documentation-code mapping verification"
@@ -12,9 +12,6 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.8"
 blake3 = "1.5"
 anyhow = "1.0"
 thiserror = "1.0"
