@@ -1,4 +1,4 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq)]

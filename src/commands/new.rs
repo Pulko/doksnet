@@ -1,8 +1,8 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use dialoguer::{Input, Select};
 use std::path::PathBuf;
 
-use crate::config::{DOKS_FILE_NAME, DoksConfig};
+use crate::config::{DoksConfig, DOKS_FILE_NAME};
 
 pub fn handle(path: Option<PathBuf>) -> Result<()> {
     let target_path = path.unwrap_or_else(|| std::env::current_dir().unwrap());

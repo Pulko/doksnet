@@ -1,4 +1,4 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use std::path::Path;
 
 pub const DOKS_FILE_NAME: &str = ".doks";
@@ -276,10 +276,8 @@ mod tests {
         let content = fs::read_to_string(&file_path).unwrap();
         assert!(content.contains("version=0.1.0"));
         assert!(content.contains("default_doc=README.md"));
-        assert!(
-            content
-                .contains("test-id-123|README.md:1-5|src/main.rs:10-20|abc123|def456|Test mapping")
-        );
+        assert!(content
+            .contains("test-id-123|README.md:1-5|src/main.rs:10-20|abc123|def456|Test mapping"));
     }
 
     #[test]

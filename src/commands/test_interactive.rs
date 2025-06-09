@@ -1,4 +1,4 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use dialoguer::{Confirm, Select};
 
 use crate::config::DoksConfig;
