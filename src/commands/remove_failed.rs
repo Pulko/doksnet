@@ -70,7 +70,7 @@ pub fn handle() -> Result<()> {
     println!("💡 These mappings have content that no longer matches their stored hashes.");
 
     let confirm = Confirm::new()
-        .with_prompt(&format!(
+        .with_prompt(format!(
             "Remove all {} failed mapping(s)?",
             failed_indices.len()
         ))

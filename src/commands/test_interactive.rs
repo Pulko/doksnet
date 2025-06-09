@@ -83,7 +83,7 @@ pub fn handle() -> Result<()> {
     // Handle failed mappings interactively
     println!("🛠️  Let's fix the failed mappings...");
 
-    for (original_index, mapping, doc_result, code_result) in failed_mappings {
+    for (_original_index, mapping, doc_result, code_result) in failed_mappings {
         // Find current index (may have changed due to removals)
         let current_index = config.mappings.iter().position(|m| m.id == mapping.id);
 
@@ -123,13 +123,13 @@ pub fn handle() -> Result<()> {
         match action {
             0 => {
                 // Update hashes
-                if let Err(ref e) = doc_result {
+                if let Err(ref _e) = doc_result {
                     if let Some(content) = extract_content_if_possible(&mapping.doc_partition) {
                         config.mappings[current_index].doc_hash = hash_content(&content);
                         println!("✅ Updated documentation hash");
                     }
                 }
-                if let Err(ref e) = code_result {
+                if let Err(ref _e) = code_result {
                     if let Some(content) = extract_content_if_possible(&mapping.code_partition) {
                         config.mappings[current_index].code_hash = hash_content(&content);
                         println!("✅ Updated code hash");
@@ -214,7 +214,7 @@ fn show_changes(
 ) -> Result<()> {
     println!("\n📋 Changes detected:");
 
-    if let Err(_) = doc_result {
+    if doc_result.is_err() {
         println!("\n📄 Documentation content has changed:");
         if let Some(content) = extract_content_if_possible(&mapping.doc_partition) {
             println!("--- Current content ---");
@@ -227,7 +227,7 @@ fn show_changes(
         }
     }
 
-    if let Err(_) = code_result {
+    if code_result.is_err() {
         println!("\n💻 Code content has changed:");
         if let Some(content) = extract_content_if_possible(&mapping.code_partition) {
             println!("--- Current content ---");

@@ -69,6 +69,7 @@ impl DoksConfig {
         self.mappings.push(mapping);
     }
 
+    #[allow(dead_code)]
     pub fn find_mapping_by_id(&mut self, id: &str) -> Option<&mut Mapping> {
         self.mappings.iter_mut().find(|m| m.id == id)
     }

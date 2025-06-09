@@ -117,8 +117,9 @@ impl Partition {
                 }
 
                 let mut result = String::new();
-                for i in (start - 1)..end {
-                    let line = lines[i];
+                for (idx, line) in lines.iter().enumerate().take(end).skip(start - 1) {
+                    let i = idx;
+                    let line = *line;
                     let line_content = match (self.start_col, self.end_col) {
                         (Some(start_col), Some(end_col)) => {
                             if i == start - 1 && i == end - 1 {
@@ -165,6 +166,8 @@ impl Partition {
     }
 
     /// Convert the partition back to string format
+    #[allow(dead_code)]
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
         let mut result = self.file_path.clone();
 

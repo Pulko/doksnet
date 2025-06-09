@@ -19,7 +19,7 @@ pub fn handle() -> Result<()> {
     // Get documentation partition
     let doc_partition_str: String = Input::new()
         .with_prompt("Documentation partition (e.g., README.md:10-20 or README.md:10-20@5-15)")
-        .with_initial_text(&format!("{}:", config.default_doc))
+        .with_initial_text(format!("{}:", config.default_doc))
         .interact_text()?;
 
     let doc_partition = Partition::parse(&doc_partition_str)?;

@@ -1,5 +1,3 @@
-use blake3;
-
 /// Generate a hash for the given content using Blake3
 pub fn hash_content(content: &str) -> String {
     let hash = blake3::hash(content.as_bytes());
