@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
-use dialoguer::{Select, Confirm};
+use anyhow::{Result, anyhow};
+use dialoguer::{Confirm, Select};
 
 use crate::config::DoksConfig;
-use crate::partition::Partition;
 use crate::hash::{hash_content, verify_hash};
+use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
     // Find the .doks file
@@ -17,7 +17,10 @@ pub fn handle() -> Result<()> {
         return Ok(());
     }
 
-    println!("🧪 Interactive Testing Mode - {} mappings", config.mappings.len());
+    println!(
+        "🧪 Interactive Testing Mode - {} mappings",
+        config.mappings.len()
+    );
     println!("📄 Default documentation file: {}", config.default_doc);
     println!();
 
@@ -28,18 +31,25 @@ pub fn handle() -> Result<()> {
     // Test all mappings first
     for (index, mapping) in config.mappings.iter().enumerate() {
         let mapping_num = index + 1;
-        println!("🔍 Testing mapping {}/{}: {}", mapping_num, config.mappings.len(), &mapping.id[..8]);
-        
+        println!(
+            "🔍 Testing mapping {}/{}: {}",
+            mapping_num,
+            config.mappings.len(),
+            &mapping.id[..8]
+        );
+
         if let Some(desc) = &mapping.description {
             println!("   📝 Description: {}", desc);
         }
-        
+
         println!("   📄 Doc: {}", mapping.doc_partition);
         println!("   💻 Code: {}", mapping.code_partition);
 
         // Test both partitions
-        let doc_result = test_partition_detailed(&mapping.doc_partition, &mapping.doc_hash, "documentation");
-        let code_result = test_partition_detailed(&mapping.code_partition, &mapping.code_hash, "code");
+        let doc_result =
+            test_partition_detailed(&mapping.doc_partition, &mapping.doc_hash, "documentation");
+        let code_result =
+            test_partition_detailed(&mapping.code_partition, &mapping.code_hash, "code");
 
         match (doc_result, code_result) {
             (Ok(_), Ok(_)) => {
@@ -51,14 +61,18 @@ pub fn handle() -> Result<()> {
                 failed_mappings.push((index, mapping.clone(), doc_result, code_result));
             }
         }
-        
+
         println!();
     }
 
     // Summary
     println!("📊 Test Results Summary:");
     println!("   ✅ Passed: {}/{}", passed_count, config.mappings.len());
-    println!("   ❌ Failed: {}/{}", failed_mappings.len(), config.mappings.len());
+    println!(
+        "   ❌ Failed: {}/{}",
+        failed_mappings.len(),
+        config.mappings.len()
+    );
     println!();
 
     if failed_mappings.is_empty() {
@@ -68,17 +82,21 @@ pub fn handle() -> Result<()> {
 
     // Handle failed mappings interactively
     println!("🛠️  Let's fix the failed mappings...");
-    
+
     for (original_index, mapping, doc_result, code_result) in failed_mappings {
         // Find current index (may have changed due to removals)
         let current_index = config.mappings.iter().position(|m| m.id == mapping.id);
-        
+
         if current_index.is_none() {
             continue; // Mapping was already removed
         }
         let current_index = current_index.unwrap();
 
-        println!("\n🚨 Failed mapping: {} ({}...)", mapping.id, &mapping.id[..8]);
+        println!(
+            "\n🚨 Failed mapping: {} ({}...)",
+            mapping.id,
+            &mapping.id[..8]
+        );
         if let Some(desc) = &mapping.description {
             println!("📝 Description: {}", desc);
         }
@@ -92,7 +110,7 @@ pub fn handle() -> Result<()> {
         let options = vec![
             "Update hashes (accept current content)",
             "Edit this mapping",
-            "Remove this mapping", 
+            "Remove this mapping",
             "Skip (leave as-is)",
         ];
 
@@ -121,7 +139,10 @@ pub fn handle() -> Result<()> {
             }
             1 => {
                 // Edit mapping - redirect to edit functionality
-                println!("💡 Use 'doksnet edit {}' to edit this mapping", &mapping.id[..8]);
+                println!(
+                    "💡 Use 'doksnet edit {}' to edit this mapping",
+                    &mapping.id[..8]
+                );
             }
             2 => {
                 // Remove mapping
@@ -129,7 +150,7 @@ pub fn handle() -> Result<()> {
                     .with_prompt("Are you sure you want to remove this mapping?")
                     .default(false)
                     .interact()?;
-                
+
                 if confirm {
                     config.mappings.remove(current_index);
                     println!("✅ Mapping removed");
@@ -151,11 +172,15 @@ pub fn handle() -> Result<()> {
     }
 
     println!("\n🏁 Interactive testing complete!");
-    
+
     Ok(())
 }
 
-fn test_partition_detailed(partition_str: &str, expected_hash: &str, content_type: &str) -> Result<(), String> {
+fn test_partition_detailed(
+    partition_str: &str,
+    expected_hash: &str,
+    content_type: &str,
+) -> Result<(), String> {
     // Parse the partition
     let partition = match Partition::parse(partition_str) {
         Ok(p) => p,
@@ -182,7 +207,11 @@ fn test_partition_detailed(partition_str: &str, expected_hash: &str, content_typ
     Ok(())
 }
 
-fn show_changes(mapping: &crate::config::Mapping, doc_result: &Result<(), String>, code_result: &Result<(), String>) -> Result<()> {
+fn show_changes(
+    mapping: &crate::config::Mapping,
+    doc_result: &Result<(), String>,
+    code_result: &Result<(), String>,
+) -> Result<()> {
     println!("\n📋 Changes detected:");
 
     if let Err(_) = doc_result {
@@ -218,4 +247,4 @@ fn extract_content_if_possible(partition_str: &str) -> Option<String> {
     Partition::parse(partition_str)
         .ok()
         .and_then(|p| p.extract_content().ok())
-} 
+}

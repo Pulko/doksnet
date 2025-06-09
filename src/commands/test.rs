@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::process;
 
 use crate::config::DoksConfig;
-use crate::partition::Partition;
 use crate::hash::{hash_content, verify_hash};
+use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
     // Find the .doks file
@@ -17,7 +17,10 @@ pub fn handle() -> Result<()> {
         return Ok(());
     }
 
-    println!("🧪 Testing {} documentation-code mappings", config.mappings.len());
+    println!(
+        "🧪 Testing {} documentation-code mappings",
+        config.mappings.len()
+    );
     println!("📄 Default documentation file: {}", config.default_doc);
     println!();
 
@@ -26,18 +29,23 @@ pub fn handle() -> Result<()> {
 
     for (index, mapping) in config.mappings.iter().enumerate() {
         let mapping_num = index + 1;
-        println!("🔍 Testing mapping {}/{}: {}", mapping_num, config.mappings.len(), mapping.id);
-        
+        println!(
+            "🔍 Testing mapping {}/{}: {}",
+            mapping_num,
+            config.mappings.len(),
+            mapping.id
+        );
+
         if let Some(desc) = &mapping.description {
             println!("   📝 Description: {}", desc);
         }
-        
+
         println!("   📄 Doc: {}", mapping.doc_partition);
         println!("   💻 Code: {}", mapping.code_partition);
 
         // Test documentation partition
         let doc_result = test_partition(&mapping.doc_partition, &mapping.doc_hash, "documentation");
-        
+
         // Test code partition
         let code_result = test_partition(&mapping.code_partition, &mapping.code_hash, "code");
 
@@ -48,7 +56,7 @@ pub fn handle() -> Result<()> {
             }
             (doc_err, code_err) => {
                 println!("   ❌ FAIL");
-                
+
                 let mut error_details = Vec::new();
                 if let Err(e) = doc_err {
                     error_details.push(format!("Documentation: {}", e));
@@ -56,18 +64,22 @@ pub fn handle() -> Result<()> {
                 if let Err(e) = code_err {
                     error_details.push(format!("Code: {}", e));
                 }
-                
+
                 failed_mappings.push((mapping_num, mapping.id.clone(), error_details));
             }
         }
-        
+
         println!();
     }
 
     // Print summary
     println!("📊 Test Results Summary:");
     println!("   ✅ Passed: {}/{}", success_count, config.mappings.len());
-    println!("   ❌ Failed: {}/{}", failed_mappings.len(), config.mappings.len());
+    println!(
+        "   ❌ Failed: {}/{}",
+        failed_mappings.len(),
+        config.mappings.len()
+    );
 
     if !failed_mappings.is_empty() {
         println!("\n🚨 Failed Mappings Details:");
@@ -77,9 +89,9 @@ pub fn handle() -> Result<()> {
                 println!("      • {}", error);
             }
         }
-        
+
         println!("\n💡 Tip: Use 'doksnet update' to fix broken mappings");
-        
+
         // Exit with error code for CI/CD integration
         process::exit(1);
     } else {
@@ -91,11 +103,18 @@ pub fn handle() -> Result<()> {
 
 fn test_partition(partition_str: &str, expected_hash: &str, content_type: &str) -> Result<()> {
     // Parse the partition
-    let partition = Partition::parse(partition_str)
-        .map_err(|e| anyhow!("Failed to parse {} partition '{}': {}", content_type, partition_str, e))?;
+    let partition = Partition::parse(partition_str).map_err(|e| {
+        anyhow!(
+            "Failed to parse {} partition '{}': {}",
+            content_type,
+            partition_str,
+            e
+        )
+    })?;
 
     // Extract content
-    let content = partition.extract_content()
+    let content = partition
+        .extract_content()
         .map_err(|e| anyhow!("Failed to extract {} content: {}", content_type, e))?;
 
     // Verify hash
@@ -110,4 +129,4 @@ fn test_partition(partition_str: &str, expected_hash: &str, content_type: &str) 
     }
 
     Ok(())
-} 
+}

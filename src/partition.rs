@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -21,11 +21,11 @@ impl Partition {
 
         let parts: Vec<&str> = partition_str.split(':').collect();
         let file_path = parts[0].to_string();
-        
+
         if file_path.trim().is_empty() {
             return Err(anyhow!("File path cannot be empty"));
         }
-        
+
         if parts.len() == 1 {
             // Just a file path, no ranges
             return Ok(Partition {
@@ -149,7 +149,7 @@ impl Partition {
                         }
                         _ => line.to_string(),
                     };
-                    
+
                     if i > start - 1 {
                         result.push('\n');
                     }
@@ -167,7 +167,7 @@ impl Partition {
     /// Convert the partition back to string format
     pub fn to_string(&self) -> String {
         let mut result = self.file_path.clone();
-        
+
         if let (Some(start_line), Some(end_line)) = (self.start_line, self.end_line) {
             if start_line == end_line {
                 result.push_str(&format!(":{}", start_line));
@@ -257,11 +257,11 @@ mod tests {
         // Empty string should error because no file path
         let result = Partition::parse("");
         assert!(result.is_err());
-        
+
         // Invalid line numbers should error
         assert!(Partition::parse("file.txt:abc").is_err());
         assert!(Partition::parse("file.txt:10@abc").is_err());
-        
+
         // This is actually valid parsing (validation happens during extraction)
         assert!(Partition::parse("file.txt:10-5").is_ok());
     }
@@ -435,4 +435,4 @@ mod tests {
         };
         assert_eq!(partition.to_string(), "file.txt");
     }
-} 
+}

@@ -1,10 +1,10 @@
-use anyhow::{anyhow, Result};
-use dialoguer::{Input, Confirm};
+use anyhow::{Result, anyhow};
+use dialoguer::{Confirm, Input};
 use uuid::Uuid;
 
 use crate::config::{DoksConfig, Mapping};
-use crate::partition::Partition;
 use crate::hash::hash_content;
+use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
     // Find the .doks file
@@ -23,7 +23,8 @@ pub fn handle() -> Result<()> {
         .interact_text()?;
 
     let doc_partition = Partition::parse(&doc_partition_str)?;
-    let doc_content = doc_partition.extract_content()
+    let doc_content = doc_partition
+        .extract_content()
         .map_err(|e| anyhow!("Failed to extract documentation content: {}", e))?;
 
     println!("\n📄 Documentation content preview:");
@@ -50,7 +51,8 @@ pub fn handle() -> Result<()> {
         .interact_text()?;
 
     let code_partition = Partition::parse(&code_partition_str)?;
-    let code_content = code_partition.extract_content()
+    let code_content = code_partition
+        .extract_content()
         .map_err(|e| anyhow!("Failed to extract code content: {}", e))?;
 
     println!("\n💻 Code content preview:");
@@ -104,4 +106,4 @@ pub fn handle() -> Result<()> {
     println!("📊 Total mappings: {}", config.mappings.len());
 
     Ok(())
-} 
+}

@@ -53,11 +53,11 @@ mod tests {
         let content1 = "Hello world";
         let content2 = "Hello  world"; // Extra space
         let content3 = "Hello world\n"; // Trailing newline
-        
+
         let hash1 = hash_content(content1);
         let hash2 = hash_content(content2);
         let hash3 = hash_content(content3);
-        
+
         assert_ne!(hash1, hash2);
         assert_ne!(hash1, hash3);
         assert_ne!(hash2, hash3);
@@ -78,4 +78,4 @@ mod tests {
         assert!(!hash.is_empty());
         assert!(verify_hash(&content, &hash));
     }
-} 
+}

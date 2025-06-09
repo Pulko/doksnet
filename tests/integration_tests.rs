@@ -9,7 +9,9 @@ fn test_cli_help() {
     cmd.arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("A CLI tool for documentation-code mapping verification"))
+        .stdout(predicate::str::contains(
+            "A CLI tool for documentation-code mapping verification",
+        ))
         .stdout(predicate::str::contains("new"))
         .stdout(predicate::str::contains("add"))
         .stdout(predicate::str::contains("edit"))
@@ -52,17 +54,17 @@ fn test_new_command_creates_doks_file() {
 // #[test]
 // fn test_new_command_with_custom_doc_file() {
 //     let dir = tempdir().unwrap();
-//     
+//
 //     let mut cmd = Command::cargo_bin("doksnet").unwrap();
 //     cmd.arg("new")
 //         .arg(dir.path())
 //         .write_stdin("docs.md\n") // Custom documentation file
 //         .assert()
 //         .success();
-// 
+//
 //     let doks_path = dir.path().join(".doks");
 //     assert!(doks_path.exists());
-// 
+//
 //     let content = fs::read_to_string(doks_path).unwrap();
 //     assert!(content.contains("default_doc = \"docs.md\""));
 // }
@@ -169,16 +171,16 @@ fn test_remove_failed_with_empty_mappings() {
 #[test]
 fn test_edit_with_nonexistent_id() {
     let dir = tempdir().unwrap();
-    
+
     // Create .doks with at least one mapping so it doesn't bail out early
     let readme_path = dir.path().join("README.md");
     fs::write(&readme_path, "# Test\nContent").unwrap();
-    
+
     let src_dir = dir.path().join("src");
     fs::create_dir(&src_dir).unwrap();
     let main_path = src_dir.join("main.rs");
     fs::write(&main_path, "fn main() {}").unwrap();
-    
+
     create_doks_with_mapping(&dir, "README.md:1", "src/main.rs:1");
 
     let mut cmd = Command::cargo_bin("doksnet").unwrap();
@@ -187,21 +189,27 @@ fn test_edit_with_nonexistent_id() {
         .arg("nonexistent")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("No mapping found with ID starting with"));
+        .stderr(predicate::str::contains(
+            "No mapping found with ID starting with",
+        ));
 }
 
 #[test]
 fn test_test_command_with_valid_mappings() {
     let dir = tempdir().unwrap();
-    
+
     // Create test files
     let readme_path = dir.path().join("README.md");
     fs::write(&readme_path, "# Test\nLine 2\nLine 3\nLine 4\nLine 5").unwrap();
-    
+
     let src_dir = dir.path().join("src");
     fs::create_dir(&src_dir).unwrap();
     let main_path = src_dir.join("main.rs");
-    fs::write(&main_path, "fn main() {\n    println!(\"Hello\");\n    println!(\"World\");\n}").unwrap();
+    fs::write(
+        &main_path,
+        "fn main() {\n    println!(\"Hello\");\n    println!(\"World\");\n}",
+    )
+    .unwrap();
 
     // Create .doks file with valid mapping
     create_doks_with_mapping(&dir, "README.md:2-3", "src/main.rs:2-3");
@@ -211,18 +219,20 @@ fn test_test_command_with_valid_mappings() {
         .arg("test")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Testing 1 documentation-code mappings"))
+        .stdout(predicate::str::contains(
+            "Testing 1 documentation-code mappings",
+        ))
         .stdout(predicate::str::contains("✅ Passed: 1/1"));
 }
 
 #[test]
 fn test_test_command_with_changed_content() {
     let dir = tempdir().unwrap();
-    
+
     // Create test files
     let readme_path = dir.path().join("README.md");
     fs::write(&readme_path, "# Test\nOriginal content\nLine 3").unwrap();
-    
+
     let src_dir = dir.path().join("src");
     fs::create_dir(&src_dir).unwrap();
     let main_path = src_dir.join("main.rs");
@@ -240,7 +250,9 @@ fn test_test_command_with_changed_content() {
         .assert()
         .failure() // Should fail with exit code 1
         .stdout(predicate::str::contains("❌ Failed: 1/1"))
-        .stdout(predicate::str::contains("documentation content has changed"));
+        .stdout(predicate::str::contains(
+            "documentation content has changed",
+        ));
 }
 
 // Helper functions
@@ -267,10 +279,10 @@ fn create_doks_with_mapping(dir: &tempfile::TempDir, doc_partition: &str, code_p
             let range_parts: Vec<&str> = range.split('-').collect();
             let start: usize = range_parts[0].parse().unwrap();
             let end: usize = range_parts[1].parse().unwrap();
-            lines[(start-1)..end].join("\n")
+            lines[(start - 1)..end].join("\n")
         } else {
             let line_num: usize = range.parse().unwrap();
-            lines[line_num-1].to_string()
+            lines[line_num - 1].to_string()
         }
     } else {
         fs::read_to_string(&doc_file).unwrap()
@@ -286,10 +298,10 @@ fn create_doks_with_mapping(dir: &tempfile::TempDir, doc_partition: &str, code_p
             let range_parts: Vec<&str> = range.split('-').collect();
             let start: usize = range_parts[0].parse().unwrap();
             let end: usize = range_parts[1].parse().unwrap();
-            lines[(start-1)..end].join("\n")
+            lines[(start - 1)..end].join("\n")
         } else {
             let line_num: usize = range.parse().unwrap();
-            lines[line_num-1].to_string()
+            lines[line_num - 1].to_string()
         }
     } else {
         fs::read_to_string(&code_file).unwrap()
@@ -317,4 +329,4 @@ description = "Test mapping"
 
     let doks_path = dir.path().join(".doks");
     fs::write(doks_path, doks_content.trim()).unwrap();
-} 
+}

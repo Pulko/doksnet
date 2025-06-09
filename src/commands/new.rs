@@ -1,8 +1,8 @@
-use anyhow::{anyhow, Result};
-use dialoguer::{Select, Input};
+use anyhow::{Result, anyhow};
+use dialoguer::{Input, Select};
 use std::path::PathBuf;
 
-use crate::config::{DoksConfig, DOKS_FILE_NAME};
+use crate::config::{DOKS_FILE_NAME, DoksConfig};
 
 pub fn handle(path: Option<PathBuf>) -> Result<()> {
     let target_path = path.unwrap_or_else(|| std::env::current_dir().unwrap());
@@ -13,11 +13,14 @@ pub fn handle(path: Option<PathBuf>) -> Result<()> {
         return Err(anyhow!("A .doks file already exists in this directory"));
     }
 
-    println!("🚀 Initializing new doksnet project in: {}", target_path.display());
+    println!(
+        "🚀 Initializing new doksnet project in: {}",
+        target_path.display()
+    );
 
     // Find potential documentation files
     let doc_files = find_documentation_files(&target_path)?;
-    
+
     let default_doc = if doc_files.is_empty() {
         // No documentation files found, ask user to specify
         let input: String = Input::new()
@@ -45,7 +48,10 @@ pub fn handle(path: Option<PathBuf>) -> Result<()> {
     let config = DoksConfig::new(default_doc.clone());
     config.to_file(&doks_file_path)?;
 
-    println!("✅ Created .doks file with default documentation: {}", default_doc);
+    println!(
+        "✅ Created .doks file with default documentation: {}",
+        default_doc
+    );
     println!("📝 You can now use 'doksnet add' to create mappings between documentation and code");
 
     Ok(())
@@ -53,13 +59,25 @@ pub fn handle(path: Option<PathBuf>) -> Result<()> {
 
 fn find_documentation_files(path: &PathBuf) -> Result<Vec<String>> {
     let mut doc_files = Vec::new();
-    
+
     // Common documentation file patterns
     let doc_patterns = [
-        "README.md", "readme.md", "README.rst", "readme.rst",
-        "README.txt", "readme.txt", "README", "readme",
-        "DOCS.md", "docs.md", "DOCUMENTATION.md", "documentation.md",
-        "GUIDE.md", "guide.md", "MANUAL.md", "manual.md"
+        "README.md",
+        "readme.md",
+        "README.rst",
+        "readme.rst",
+        "README.txt",
+        "readme.txt",
+        "README",
+        "readme",
+        "DOCS.md",
+        "docs.md",
+        "DOCUMENTATION.md",
+        "documentation.md",
+        "GUIDE.md",
+        "guide.md",
+        "MANUAL.md",
+        "manual.md",
     ];
 
     // Walk through the directory (not recursively for documentation files)
@@ -67,7 +85,7 @@ fn find_documentation_files(path: &PathBuf) -> Result<Vec<String>> {
         let entry = entry?;
         let file_name = entry.file_name();
         let file_name_str = file_name.to_string_lossy();
-        
+
         if entry.file_type()?.is_file() {
             // Check if it matches any documentation pattern
             for pattern in &doc_patterns {
@@ -76,7 +94,7 @@ fn find_documentation_files(path: &PathBuf) -> Result<Vec<String>> {
                     break;
                 }
             }
-            
+
             // Also check for .md files in general
             if file_name_str.ends_with(".md") && !doc_files.contains(&file_name_str.to_string()) {
                 doc_files.push(file_name_str.to_string());
@@ -88,7 +106,7 @@ fn find_documentation_files(path: &PathBuf) -> Result<Vec<String>> {
     doc_files.sort_by(|a, b| {
         let a_is_readme = a.to_lowercase().starts_with("readme");
         let b_is_readme = b.to_lowercase().starts_with("readme");
-        
+
         match (a_is_readme, b_is_readme) {
             (true, false) => std::cmp::Ordering::Less,
             (false, true) => std::cmp::Ordering::Greater,
@@ -97,4 +115,4 @@ fn find_documentation_files(path: &PathBuf) -> Result<Vec<String>> {
     });
 
     Ok(doc_files)
-} 
+}

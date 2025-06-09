@@ -1,17 +1,17 @@
-use clap::Parser;
 use anyhow::Result;
+use clap::Parser;
 
 mod cli;
-mod config;
-mod partition;
-mod hash;
 mod commands;
+mod config;
+mod hash;
+mod partition;
 
 use cli::Cli;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
+
     match cli.command {
         cli::Commands::New { path } => commands::new::handle(path),
         cli::Commands::Add => commands::add::handle(),

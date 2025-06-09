@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use dialoguer::Confirm;
 
 use crate::config::DoksConfig;
-use crate::partition::Partition;
 use crate::hash::verify_hash;
+use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
     // Find the .doks file
@@ -17,7 +17,10 @@ pub fn handle() -> Result<()> {
         return Ok(());
     }
 
-    println!("🔍 Checking {} mappings for failures...", config.mappings.len());
+    println!(
+        "🔍 Checking {} mappings for failures...",
+        config.mappings.len()
+    );
 
     // Identify failed mappings
     let mut failed_indices = Vec::new();
@@ -42,7 +45,7 @@ pub fn handle() -> Result<()> {
                 mapping.doc_partition.clone(),
                 mapping.code_partition.clone(),
                 mapping.description.clone(),
-                failure_reasons
+                failure_reasons,
             ));
         }
     }
@@ -65,9 +68,12 @@ pub fn handle() -> Result<()> {
     }
 
     println!("💡 These mappings have content that no longer matches their stored hashes.");
-    
+
     let confirm = Confirm::new()
-        .with_prompt(&format!("Remove all {} failed mapping(s)?", failed_indices.len()))
+        .with_prompt(&format!(
+            "Remove all {} failed mapping(s)?",
+            failed_indices.len()
+        ))
         .default(false)
         .interact()?;
 
@@ -78,10 +84,13 @@ pub fn handle() -> Result<()> {
         }
 
         config.to_file(&doks_file_path)?;
-        
-        println!("✅ Successfully removed {} failed mapping(s)", failed_indices.len());
+
+        println!(
+            "✅ Successfully removed {} failed mapping(s)",
+            failed_indices.len()
+        );
         println!("📊 Remaining mappings: {}", config.mappings.len());
-        
+
         if config.mappings.is_empty() {
             println!("💡 No mappings remain. Use 'doksnet add' to create new ones.");
         }
@@ -105,4 +114,4 @@ fn test_partition_validity(partition_str: &str, expected_hash: &str) -> bool {
         }
         Err(_) => false, // Partition parsing failed
     }
-} 
+}

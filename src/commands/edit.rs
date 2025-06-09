@@ -1,9 +1,9 @@
-use anyhow::{anyhow, Result};
-use dialoguer::{Input, Confirm, Select};
+use anyhow::{Result, anyhow};
+use dialoguer::{Confirm, Input, Select};
 
 use crate::config::DoksConfig;
-use crate::partition::Partition;
 use crate::hash::hash_content;
+use crate::partition::Partition;
 
 pub fn handle(id: String) -> Result<()> {
     // Find the .doks file
@@ -18,13 +18,14 @@ pub fn handle(id: String) -> Result<()> {
     }
 
     // Find the mapping by ID (allow partial matching)
-    let mapping_index = config.mappings
+    let mapping_index = config
+        .mappings
         .iter()
         .position(|m| m.id.starts_with(&id))
         .ok_or_else(|| anyhow!("No mapping found with ID starting with '{}'", id))?;
 
     let mapping = &mut config.mappings[mapping_index];
-    
+
     println!("✏️  Editing mapping: {}", mapping.id);
     println!("Current values:");
     println!("📄 Documentation: {}", mapping.doc_partition);
@@ -39,10 +40,10 @@ pub fn handle(id: String) -> Result<()> {
     // What would you like to edit?
     let options = vec![
         "Documentation partition",
-        "Code partition", 
+        "Code partition",
         "Description",
         "Both documentation and code partitions",
-        "Cancel"
+        "Cancel",
     ];
 
     let selection = Select::new()
@@ -58,7 +59,7 @@ pub fn handle(id: String) -> Result<()> {
         3 => {
             edit_doc_partition(mapping)?;
             edit_code_partition(mapping)?;
-        },
+        }
         4 => {
             println!("❌ Edit cancelled");
             return Ok(());
@@ -85,7 +86,8 @@ fn edit_doc_partition(mapping: &mut crate::config::Mapping) -> Result<()> {
     if new_partition != mapping.doc_partition {
         // Validate and extract content
         let partition = Partition::parse(&new_partition)?;
-        let content = partition.extract_content()
+        let content = partition
+            .extract_content()
             .map_err(|e| anyhow!("Failed to extract documentation content: {}", e))?;
 
         println!("\n📄 New documentation content preview:");
@@ -127,7 +129,8 @@ fn edit_code_partition(mapping: &mut crate::config::Mapping) -> Result<()> {
     if new_partition != mapping.code_partition {
         // Validate and extract content
         let partition = Partition::parse(&new_partition)?;
-        let content = partition.extract_content()
+        let content = partition
+            .extract_content()
             .map_err(|e| anyhow!("Failed to extract code content: {}", e))?;
 
         println!("\n💻 New code content preview:");
@@ -160,7 +163,14 @@ fn edit_code_partition(mapping: &mut crate::config::Mapping) -> Result<()> {
 fn edit_description(mapping: &mut crate::config::Mapping) -> Result<()> {
     println!("\n📝 Editing description");
     let current_desc = mapping.description.as_deref().unwrap_or("");
-    println!("Current value: {}", if current_desc.is_empty() { "(none)" } else { current_desc });
+    println!(
+        "Current value: {}",
+        if current_desc.is_empty() {
+            "(none)"
+        } else {
+            current_desc
+        }
+    );
 
     let new_description: String = Input::new()
         .with_prompt("New description (leave empty to remove)")
@@ -182,4 +192,4 @@ fn edit_description(mapping: &mut crate::config::Mapping) -> Result<()> {
     }
 
     Ok(())
-} 
+}

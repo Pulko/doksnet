@@ -1,6 +1,6 @@
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use anyhow::Result;
 
 pub const DOKS_FILE_NAME: &str = ".doks";
 
@@ -77,8 +77,8 @@ impl DoksConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
     use std::fs;
+    use tempfile::tempdir;
 
     fn create_test_mapping() -> Mapping {
         Mapping {
@@ -103,7 +103,7 @@ mod tests {
     fn test_add_mapping() {
         let mut config = DoksConfig::new("README.md".to_string());
         let mapping = create_test_mapping();
-        
+
         config.add_mapping(mapping.clone());
         assert_eq!(config.mappings.len(), 1);
         assert_eq!(config.mappings[0].id, mapping.id);
@@ -114,13 +114,13 @@ mod tests {
         let mut config = DoksConfig::new("README.md".to_string());
         let mapping = create_test_mapping();
         let id = mapping.id.clone();
-        
+
         config.add_mapping(mapping);
-        
+
         let found = config.find_mapping_by_id(&id);
         assert!(found.is_some());
         assert_eq!(found.unwrap().id, id);
-        
+
         let not_found = config.find_mapping_by_id("nonexistent");
         assert!(not_found.is_none());
     }
@@ -129,14 +129,14 @@ mod tests {
     fn test_to_file_and_from_file() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join(".doks");
-        
+
         let mut config = DoksConfig::new("README.md".to_string());
         config.add_mapping(create_test_mapping());
-        
+
         // Write to file
         config.to_file(&file_path).unwrap();
         assert!(file_path.exists());
-        
+
         // Read from file
         let loaded_config = DoksConfig::from_file(&file_path).unwrap();
         assert_eq!(loaded_config.version, config.version);
@@ -155,24 +155,24 @@ mod tests {
     fn test_find_doks_file() {
         let dir = tempdir().unwrap();
         let doks_path = dir.path().join(DOKS_FILE_NAME);
-        
+
         // Change to temp directory
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(&dir).unwrap();
-        
+
         // No .doks file exists
         assert!(DoksConfig::find_doks_file().is_none());
-        
+
         // Create .doks file
         fs::write(&doks_path, "test").unwrap();
         let found = DoksConfig::find_doks_file();
         assert!(found.is_some());
-        
+
         // Check that the filename matches (handle potential symlink differences on macOS)
         let found_path = found.unwrap();
         assert!(found_path.ends_with(DOKS_FILE_NAME));
         assert!(found_path.exists());
-        
+
         // Restore original directory
         std::env::set_current_dir(original_dir).unwrap();
     }
@@ -181,12 +181,12 @@ mod tests {
     fn test_serialization_format() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join(".doks");
-        
+
         let mut config = DoksConfig::new("README.md".to_string());
         config.add_mapping(create_test_mapping());
-        
+
         config.to_file(&file_path).unwrap();
-        
+
         let content = fs::read_to_string(&file_path).unwrap();
         assert!(content.contains("version = \"0.1.0\""));
         assert!(content.contains("default_doc = \"README.md\""));
@@ -199,7 +199,7 @@ mod tests {
         let mapping = create_test_mapping();
         let serialized = toml::to_string(&mapping).unwrap();
         let deserialized: Mapping = toml::from_str(&serialized).unwrap();
-        
+
         assert_eq!(mapping.id, deserialized.id);
         assert_eq!(mapping.doc_partition, deserialized.doc_partition);
         assert_eq!(mapping.code_partition, deserialized.code_partition);
@@ -207,4 +207,4 @@ mod tests {
         assert_eq!(mapping.code_hash, deserialized.code_hash);
         assert_eq!(mapping.description, deserialized.description);
     }
-} 
+}

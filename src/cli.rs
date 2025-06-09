@@ -13,7 +13,7 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Create a new .doks file
-    New { 
+    New {
         /// Path where the .doks file should be created (default: current directory)
         path: Option<PathBuf>,
     },
@@ -30,4 +30,4 @@ pub enum Commands {
     Test,
     /// Interactive testing with change preview and edit/remove options
     TestInteractive,
-} 
+}
