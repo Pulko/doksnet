@@ -15,12 +15,16 @@ impl Partition {
     /// <relative_path>:<start_line>-<end_line>@<start_col>-<end_col>
     /// Line or column ranges can be optional
     pub fn parse(partition_str: &str) -> Result<Self> {
-        let parts: Vec<&str> = partition_str.split(':').collect();
-        if parts.len() < 1 {
-            return Err(anyhow!("Invalid partition format"));
+        if partition_str.trim().is_empty() {
+            return Err(anyhow!("Partition string cannot be empty"));
         }
 
+        let parts: Vec<&str> = partition_str.split(':').collect();
         let file_path = parts[0].to_string();
+        
+        if file_path.trim().is_empty() {
+            return Err(anyhow!("File path cannot be empty"));
+        }
         
         if parts.len() == 1 {
             // Just a file path, no ranges
@@ -187,6 +191,8 @@ impl Partition {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
+    use tempfile::tempdir;
 
     #[test]
     fn test_parse_file_only() {
@@ -194,6 +200,8 @@ mod tests {
         assert_eq!(partition.file_path, "src/main.rs");
         assert_eq!(partition.start_line, None);
         assert_eq!(partition.end_line, None);
+        assert_eq!(partition.start_col, None);
+        assert_eq!(partition.end_col, None);
     }
 
     #[test]
@@ -202,6 +210,8 @@ mod tests {
         assert_eq!(partition.file_path, "src/main.rs");
         assert_eq!(partition.start_line, Some(10));
         assert_eq!(partition.end_line, Some(20));
+        assert_eq!(partition.start_col, None);
+        assert_eq!(partition.end_col, None);
     }
 
     #[test]
@@ -212,5 +222,217 @@ mod tests {
         assert_eq!(partition.end_line, Some(20));
         assert_eq!(partition.start_col, Some(5));
         assert_eq!(partition.end_col, Some(15));
+    }
+
+    #[test]
+    fn test_parse_single_line() {
+        let partition = Partition::parse("README.md:42").unwrap();
+        assert_eq!(partition.file_path, "README.md");
+        assert_eq!(partition.start_line, Some(42));
+        assert_eq!(partition.end_line, Some(42));
+    }
+
+    #[test]
+    fn test_parse_single_column() {
+        let partition = Partition::parse("file.txt:10@5").unwrap();
+        assert_eq!(partition.file_path, "file.txt");
+        assert_eq!(partition.start_line, Some(10));
+        assert_eq!(partition.end_line, Some(10));
+        assert_eq!(partition.start_col, Some(5));
+        assert_eq!(partition.end_col, Some(5));
+    }
+
+    #[test]
+    fn test_parse_with_empty_ranges() {
+        let partition = Partition::parse("file.txt:@").unwrap();
+        assert_eq!(partition.file_path, "file.txt");
+        assert_eq!(partition.start_line, None);
+        assert_eq!(partition.end_line, None);
+        assert_eq!(partition.start_col, None);
+        assert_eq!(partition.end_col, None);
+    }
+
+    #[test]
+    fn test_parse_invalid_format() {
+        // Empty string should error because no file path
+        let result = Partition::parse("");
+        assert!(result.is_err());
+        
+        // Invalid line numbers should error
+        assert!(Partition::parse("file.txt:abc").is_err());
+        assert!(Partition::parse("file.txt:10@abc").is_err());
+        
+        // This is actually valid parsing (validation happens during extraction)
+        assert!(Partition::parse("file.txt:10-5").is_ok());
+    }
+
+    #[test]
+    fn test_extract_content_entire_file() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "line1\nline2\nline3").unwrap();
+
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: None,
+            end_line: None,
+            start_col: None,
+            end_col: None,
+        };
+
+        let content = partition.extract_content().unwrap();
+        assert_eq!(content, "line1\nline2\nline3");
+    }
+
+    #[test]
+    fn test_extract_content_line_range() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "line1\nline2\nline3\nline4").unwrap();
+
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(2),
+            end_line: Some(3),
+            start_col: None,
+            end_col: None,
+        };
+
+        let content = partition.extract_content().unwrap();
+        assert_eq!(content, "line2\nline3");
+    }
+
+    #[test]
+    fn test_extract_content_single_line() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "line1\nline2\nline3").unwrap();
+
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(2),
+            end_line: Some(2),
+            start_col: None,
+            end_col: None,
+        };
+
+        let content = partition.extract_content().unwrap();
+        assert_eq!(content, "line2");
+    }
+
+    #[test]
+    fn test_extract_content_with_columns() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "hello world\nrust programming").unwrap();
+
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(1),
+            end_line: Some(1),
+            start_col: Some(7),
+            end_col: Some(11),
+        };
+
+        let content = partition.extract_content().unwrap();
+        assert_eq!(content, "world");
+    }
+
+    #[test]
+    fn test_extract_content_multiline_with_columns() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "hello world\nrust programming\ngreat language").unwrap();
+
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(1),
+            end_line: Some(2),
+            start_col: Some(7),
+            end_col: Some(4),
+        };
+
+        let content = partition.extract_content().unwrap();
+        assert_eq!(content, "world\nrust");
+    }
+
+    #[test]
+    fn test_extract_content_file_not_found() {
+        let partition = Partition {
+            file_path: "nonexistent.txt".to_string(),
+            start_line: None,
+            end_line: None,
+            start_col: None,
+            end_col: None,
+        };
+
+        assert!(partition.extract_content().is_err());
+    }
+
+    #[test]
+    fn test_extract_content_invalid_line_numbers() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "line1\nline2").unwrap();
+
+        // Zero-indexed line numbers should fail
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(0),
+            end_line: Some(1),
+            start_col: None,
+            end_col: None,
+        };
+        assert!(partition.extract_content().is_err());
+
+        // Line numbers exceeding file length should fail
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(1),
+            end_line: Some(5),
+            start_col: None,
+            end_col: None,
+        };
+        assert!(partition.extract_content().is_err());
+
+        // Start line > end line should fail
+        let partition = Partition {
+            file_path: file_path.to_string_lossy().to_string(),
+            start_line: Some(2),
+            end_line: Some(1),
+            start_col: None,
+            end_col: None,
+        };
+        assert!(partition.extract_content().is_err());
+    }
+
+    #[test]
+    fn test_to_string() {
+        let partition = Partition {
+            file_path: "src/main.rs".to_string(),
+            start_line: Some(10),
+            end_line: Some(20),
+            start_col: Some(5),
+            end_col: Some(15),
+        };
+        assert_eq!(partition.to_string(), "src/main.rs:10-20@5-15");
+
+        let partition = Partition {
+            file_path: "README.md".to_string(),
+            start_line: Some(5),
+            end_line: Some(5),
+            start_col: None,
+            end_col: None,
+        };
+        assert_eq!(partition.to_string(), "README.md:5");
+
+        let partition = Partition {
+            file_path: "file.txt".to_string(),
+            start_line: None,
+            end_line: None,
+            start_col: None,
+            end_col: None,
+        };
+        assert_eq!(partition.to_string(), "file.txt");
     }
 } 

@@ -39,4 +39,43 @@ mod tests {
         let hash2 = hash_content(content);
         assert_eq!(hash1, hash2);
     }
+
+    #[test]
+    fn test_empty_content() {
+        let content = "";
+        let hash = hash_content(content);
+        assert!(!hash.is_empty());
+        assert_eq!(hash.len(), 64);
+    }
+
+    #[test]
+    fn test_whitespace_sensitivity() {
+        let content1 = "Hello world";
+        let content2 = "Hello  world"; // Extra space
+        let content3 = "Hello world\n"; // Trailing newline
+        
+        let hash1 = hash_content(content1);
+        let hash2 = hash_content(content2);
+        let hash3 = hash_content(content3);
+        
+        assert_ne!(hash1, hash2);
+        assert_ne!(hash1, hash3);
+        assert_ne!(hash2, hash3);
+    }
+
+    #[test]
+    fn test_unicode_content() {
+        let content = "Hello 世界 🦀";
+        let hash = hash_content(content);
+        assert!(!hash.is_empty());
+        assert!(verify_hash(content, &hash));
+    }
+
+    #[test]
+    fn test_large_content() {
+        let content = "A".repeat(10000);
+        let hash = hash_content(&content);
+        assert!(!hash.is_empty());
+        assert!(verify_hash(&content, &hash));
+    }
 } 
