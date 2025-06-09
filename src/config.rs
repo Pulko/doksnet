@@ -56,7 +56,7 @@ impl DoksConfig {
 
         for line in content.lines() {
             let line = line.trim();
-            
+
             // Skip comments and empty lines
             if line.is_empty() || line.starts_with('#') {
                 continue;
@@ -70,7 +70,10 @@ impl DoksConfig {
                 // Parse mapping line: id|doc_partition|code_partition|doc_hash|code_hash|description
                 let parts: Vec<&str> = line.split('|').collect();
                 if parts.len() < 5 {
-                    return Err(anyhow!("Invalid mapping line: {} (expected at least 5 parts)", line));
+                    return Err(anyhow!(
+                        "Invalid mapping line: {} (expected at least 5 parts)",
+                        line
+                    ));
                 }
 
                 let description = if parts.len() > 5 && !parts[5].trim().is_empty() {
@@ -104,16 +107,18 @@ impl DoksConfig {
     #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
         let mut content = String::new();
-        
+
         // Header
         content.push_str("# .doks v2 - Compact format\n");
         content.push_str(&format!("version={}\n", self.version));
         content.push_str(&format!("default_doc={}\n", self.default_doc));
         content.push('\n');
-        
+
         if !self.mappings.is_empty() {
-            content.push_str("# Format: id|doc_partition|code_partition|doc_hash|code_hash|description\n");
-            
+            content.push_str(
+                "# Format: id|doc_partition|code_partition|doc_hash|code_hash|description\n",
+            );
+
             for mapping in &self.mappings {
                 let description = mapping.description.as_deref().unwrap_or("");
                 content.push_str(&format!(
@@ -127,7 +132,7 @@ impl DoksConfig {
                 ));
             }
         }
-        
+
         content
     }
 
@@ -271,7 +276,10 @@ mod tests {
         let content = fs::read_to_string(&file_path).unwrap();
         assert!(content.contains("version=0.1.0"));
         assert!(content.contains("default_doc=README.md"));
-        assert!(content.contains("test-id-123|README.md:1-5|src/main.rs:10-20|abc123|def456|Test mapping"));
+        assert!(
+            content
+                .contains("test-id-123|README.md:1-5|src/main.rs:10-20|abc123|def456|Test mapping")
+        );
     }
 
     #[test]
@@ -279,10 +287,10 @@ mod tests {
         let mapping = create_test_mapping();
         let mut config = DoksConfig::new("README.md".to_string());
         config.add_mapping(mapping.clone());
-        
+
         let serialized = config.to_string();
         let deserialized = DoksConfig::parse(&serialized).unwrap();
-        
+
         assert_eq!(deserialized.mappings.len(), 1);
         let parsed_mapping = &deserialized.mappings[0];
         assert_eq!(mapping.id, parsed_mapping.id);
@@ -309,10 +317,13 @@ test-2|docs/api.md:5-10|src/lib.rs:1-10|fedcba|654321|
         assert_eq!(config.version, "0.1.0");
         assert_eq!(config.default_doc, "README.md");
         assert_eq!(config.mappings.len(), 2);
-        
+
         assert_eq!(config.mappings[0].id, "test-1");
-        assert_eq!(config.mappings[0].description, Some("Test mapping".to_string()));
-        
+        assert_eq!(
+            config.mappings[0].description,
+            Some("Test mapping".to_string())
+        );
+
         assert_eq!(config.mappings[1].id, "test-2");
         assert_eq!(config.mappings[1].description, None);
     }
@@ -322,7 +333,7 @@ test-2|docs/api.md:5-10|src/lib.rs:1-10|fedcba|654321|
         let content = "invalid|format";
         let result = DoksConfig::parse(content);
         assert!(result.is_err());
-        
+
         let content = "version=0.1.0\n# missing default_doc";
         let result = DoksConfig::parse(content);
         assert!(result.is_err());
@@ -340,10 +351,10 @@ test-2|docs/api.md:5-10|src/lib.rs:1-10|fedcba|654321|
             description: None,
         };
         config.add_mapping(mapping);
-        
+
         let serialized = config.to_string();
         let parsed = DoksConfig::parse(&serialized).unwrap();
-        
+
         assert_eq!(parsed.mappings[0].description, None);
     }
 }
