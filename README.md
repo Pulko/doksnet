@@ -255,12 +255,68 @@ doksnet test  # Fails build if docs/code drift apart
 
 Doksnet provides a ready-to-use GitHub Action for seamless CI/CD integration:
 
+### Basic Usage
+
+```yaml
+name: Documentation Sync Check
+on: [push, pull_request]
+
+jobs:
+  verify-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Pulko/doksnet@v1
+        # Uses defaults: command='test', fail-on-error=true
+```
+
+### Advanced Configuration
+
 ```yaml
 - uses: Pulko/doksnet@v1
   with:
-    command: 'test'        # Command to run
-    version: 'latest'      # Doksnet version
-    fail-on-error: true    # Fail workflow on issues
+    command: 'test'           # Command to run
+    version: 'latest'         # Doksnet version  
+    working-directory: '.'    # Directory to run in
+    fail-on-error: true       # Fail workflow on issues
+```
+
+### Action Inputs
+
+| Input | Description | Default | Options |
+|-------|-------------|---------|---------|
+| `command` | Doksnet command to run | `test` | `test`, `remove-failed` |
+| `version` | Doksnet version to use | `latest` | `latest`, `0.2.0`, etc. |
+| `working-directory` | Directory to run doksnet in | `.` | Any valid path |
+| `fail-on-error` | Fail workflow if issues found | `true` | `true`, `false` |
+
+### Action Outputs
+
+| Output | Description |
+|--------|-------------|
+| `result` | Full output from doksnet command |
+| `exit-code` | Exit code (0 = success, 1 = failure) |
+
+### Common Patterns
+
+**Enforce Documentation Sync (Fail Build):**
+```yaml
+- uses: Pulko/doksnet@v1
+  # Fails CI if docs are out of sync (default behavior)
+```
+
+**Warning Only (Don't Fail Build):**
+```yaml
+- uses: Pulko/doksnet@v1
+  with:
+    fail-on-error: false
+```
+
+**Cleanup Failed Mappings:**
+```yaml
+- uses: Pulko/doksnet@v1
+  with:
+    command: 'remove-failed'
 ```
 
 **Benefits:**
@@ -268,8 +324,6 @@ Doksnet provides a ready-to-use GitHub Action for seamless CI/CD integration:
 - ⚡ **Fast** - Cached dependencies, optimized for CI
 - 🔧 **Flexible** - Configurable commands and error handling
 - 🌍 **Cross-platform** - Works on Linux, Windows, macOS
-
-See the [Action README](ACTION_README.md) for detailed usage examples.
 
 ## 🚧 Future Extensions
 
