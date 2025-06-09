@@ -1,0 +1,62 @@
+name: Test Doksnet Action
+
+on:
+  push:
+    paths:
+      - 'action.yml'
+      - '.github/workflows/test-action.yml'
+  pull_request:
+    paths:
+      - 'action.yml'
+      - '.github/workflows/test-action.yml'
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Test Action (should fail gracefully - no .doks file)
+        id: test-no-doks
+        uses: ./
+        with:
+          command: 'test'
+          fail-on-error: false
+        continue-on-error: true
+      
+      - name: Verify Action Outputs
+        run: |
+          echo "Exit code: ${{ steps.test-no-doks.outputs.exit-code }}"
+          echo "Result: ${{ steps.test-no-doks.outputs.result }}"
+          
+          # Should fail because no .doks file exists
+          if [ "${{ steps.test-no-doks.outputs.exit-code }}" != "1" ]; then
+            echo "Expected exit code 1 (no .doks file), got ${{ steps.test-no-doks.outputs.exit-code }}"
+            exit 1
+          fi
+          
+          # Should contain error message about missing .doks file
+          if [[ "${{ steps.test-no-doks.outputs.result }}" != *".doks file"* ]]; then
+            echo "Expected error message about .doks file"
+            exit 1
+          fi
+          
+          echo "✅ Action test passed!"
+
+  test-action-matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Test Action on ${{ matrix.os }}
+        uses: ./
+        with:
+          command: 'test'
+          fail-on-error: false
+        continue-on-error: true 

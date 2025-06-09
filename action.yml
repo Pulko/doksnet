@@ -1,0 +1,100 @@
+name: 'Doksnet Documentation-Code Verification'
+description: 'Verify that documentation and code stay synchronized using cryptographic hashes'
+author: 'Pulko'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  command:
+    description: 'Doksnet command to run (test, new, add, edit, remove-failed, test-interactive)'
+    required: false
+    default: 'test'
+  
+  version:
+    description: 'Version of doksnet to use'
+    required: false
+    default: 'latest'
+  
+  working-directory:
+    description: 'Working directory to run doksnet in'
+    required: false
+    default: '.'
+  
+  fail-on-error:
+    description: 'Whether to fail the workflow if doksnet finds issues'
+    required: false
+    default: 'true'
+
+outputs:
+  result:
+    description: 'Result of the doksnet command execution'
+    value: ${{ steps.doksnet.outputs.result }}
+  
+  exit-code:
+    description: 'Exit code from doksnet command'
+    value: ${{ steps.doksnet.outputs.exit-code }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          ~/.cargo/bin
+        key: ${{ runner.os }}-cargo-doksnet-${{ inputs.version }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-doksnet-
+          ${{ runner.os }}-cargo-
+
+    - name: Install doksnet
+      shell: bash
+      run: |
+        if [ "${{ inputs.version }}" = "latest" ]; then
+          echo "Installing latest version of doksnet..."
+          cargo install doksnet
+        else
+          echo "Installing doksnet version ${{ inputs.version }}..."
+          cargo install doksnet --version ${{ inputs.version }}
+        fi
+
+    - name: Run doksnet
+      id: doksnet
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Running doksnet ${{ inputs.command }} in ${{ inputs.working-directory }}"
+        
+        # Capture output and exit code
+        set +e
+        OUTPUT=$(doksnet ${{ inputs.command }} 2>&1)
+        EXIT_CODE=$?
+        set -e
+        
+        # Save outputs
+        echo "result<<EOF" >> $GITHUB_OUTPUT
+        echo "$OUTPUT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "exit-code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        
+        # Print output to console
+        echo "$OUTPUT"
+        
+        # Handle failure
+        if [ $EXIT_CODE -ne 0 ] && [ "${{ inputs.fail-on-error }}" = "true" ]; then
+          echo "::error::Doksnet command failed with exit code $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
+        
+        echo "Doksnet command completed with exit code $EXIT_CODE" 

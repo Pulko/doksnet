@@ -1,7 +1,7 @@
 # 🦀 doksnet
 
-[![CI](https://github.com/username/doksnet/workflows/CI/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/ci.yml)
-[![Quick Check](https://github.com/username/doksnet/workflows/Quick%20Check/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/quick-check.yml)
+[![CI](https://github.com/Pulko/doksnet/workflows/CI/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/ci.yml)
+[![Quick Check](https://github.com/Pulko/doksnet/workflows/Quick%20Check/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/quick-check.yml)
 [![Crates.io](https://img.shields.io/crates/v/doksnet.svg)](https://crates.io/crates/doksnet)
 [![Documentation](https://docs.rs/doksnet/badge.svg)](https://docs.rs/doksnet)
 
@@ -9,13 +9,27 @@ A Rust CLI tool for **documentation ↔ code mapping verification**. Create ligh
 
 ## 🚀 Installation
 
-```bash
-# Clone and build
-git clone <repository>
-cd doksnet
-cargo build --release
+### From crates.io (Recommended)
 
-# Install globally (optional)
+```bash
+# Install from crates.io
+cargo install doksnet
+```
+
+### From GitHub Releases
+
+Download pre-built binaries from [GitHub Releases](https://github.com/Pulko/doksnet/releases):
+
+- **Linux**: `doksnet-linux-amd64`
+- **Windows**: `doksnet-windows-amd64.exe`  
+- **macOS**: `doksnet-macos-amd64` (Intel) or `doksnet-macos-arm64` (Apple Silicon)
+
+### From Source (Development)
+
+```bash
+# Clone and build from source
+git clone https://github.com/Pulko/doksnet
+cd doksnet
 cargo install --path .
 ```
 
@@ -181,6 +195,8 @@ main-func|README.md:25-30|src/main.rs:1-10|fedcba987654...|123456789abc...|Main 
 
 ## 🔄 Typical Workflow
 
+### Local Development
+
 ```bash
 # 1. Initialize project
 doksnet new
@@ -188,8 +204,8 @@ doksnet new
 # 2. Create mappings between docs and code
 doksnet add   # Repeat as needed
 
-# 3. In CI/CD pipeline
-doksnet test  # Fails build if docs/code drift apart
+# 3. Test locally
+doksnet test
 
 # 4. When changes are detected
 doksnet test-interactive  # Guided fixing
@@ -201,6 +217,32 @@ doksnet edit a1b2c3d4
 doksnet remove-failed
 ```
 
+### CI/CD Integration
+
+**Using GitHub Action (Recommended):**
+
+```yaml
+# .github/workflows/docs.yml
+name: Documentation Sync
+
+on: [push, pull_request]
+
+jobs:
+  verify-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Pulko/doksnet@v1
+```
+
+**Manual Installation:**
+
+```bash
+# In your CI/CD pipeline
+cargo install doksnet
+doksnet test  # Fails build if docs/code drift apart
+```
+
 ## 🎯 Use Cases
 
 - **API Documentation**: Link examples in README to actual implementation
@@ -209,9 +251,28 @@ doksnet remove-failed
 - **Code Reviews**: Verify documentation updates accompany code changes
 - **Legacy Code**: Track which docs describe which code sections
 
+## 🚀 GitHub Action
+
+Doksnet provides a ready-to-use GitHub Action for seamless CI/CD integration:
+
+```yaml
+- uses: Pulko/doksnet@v1
+  with:
+    command: 'test'        # Command to run
+    version: 'latest'      # Doksnet version
+    fail-on-error: true    # Fail workflow on issues
+```
+
+**Benefits:**
+- ✅ **Zero setup** - No need to install Rust/Cargo
+- ⚡ **Fast** - Cached dependencies, optimized for CI
+- 🔧 **Flexible** - Configurable commands and error handling
+- 🌍 **Cross-platform** - Works on Linux, Windows, macOS
+
+See the [Action README](ACTION_README.md) for detailed usage examples.
+
 ## 🚧 Future Extensions
 
-- **CI/CD Integration**: Pre-built GitHub Actions
 - **VSCode Extension**: GUI for creating/managing mappings
 - **Diff Visualization**: Show exact changes between versions
 - **Batch Operations**: Mass edit/update operations
