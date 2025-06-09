@@ -1,5 +1,10 @@
 # 🦀 doksnet
 
+[![CI](https://github.com/username/doksnet/workflows/CI/badge.svg)](https://github.com/username/doksnet/actions)
+[![Quick Check](https://github.com/username/doksnet/workflows/Quick%20Check/badge.svg)](https://github.com/username/doksnet/actions)
+[![Crates.io](https://img.shields.io/crates/v/doksnet.svg)](https://crates.io/crates/doksnet)
+[![Documentation](https://docs.rs/doksnet/badge.svg)](https://docs.rs/doksnet)
+
 A Rust CLI tool for **documentation ↔ code mapping verification**. Create lightweight symbolic links between documentation sections and code snippets, then verify that both sides stay synchronized using cryptographic hashes.
 
 ## 🚀 Installation

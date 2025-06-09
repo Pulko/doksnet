@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+        
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+          
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+      
+    - name: Run clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+      
+    - name: Run cargo check
+      run: cargo check --all-targets --all-features
+      
+    - name: Run unit tests
+      run: cargo test --bin doksnet
+      
+    - name: Run integration tests
+      run: cargo test --test integration_tests
+      
+    - name: Run command tests
+      run: cargo test --test command_tests
+      
+    - name: Run end-to-end tests
+      run: cargo test --test end_to_end_tests
+      
+    - name: Run all tests (final verification)
+      run: cargo test --all-targets
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+          
+    - name: Build
+      run: cargo build --release
+      
+    - name: Test build artifact
+      run: |
+        ./target/release/doksnet --version
+        ./target/release/doksnet --help
+      shell: bash
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Install cargo-audit
+      run: cargo install cargo-audit
+      
+    - name: Run security audit
+      run: cargo audit
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: llvm-tools-preview
+        
+    - name: Install cargo-llvm-cov
+      uses: taiki-e/install-action@cargo-llvm-cov
+      
+    - name: Generate code coverage
+      run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: lcov.info
+        fail_ci_if_error: false 

@@ -1,0 +1,46 @@
+name: Quick Check
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  quick-check:
+    name: Quick Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+        
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-quick-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-quick-
+          ${{ runner.os }}-cargo-
+          
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+      
+    - name: Run cargo check
+      run: cargo check --all-targets
+      
+    - name: Run clippy (warnings only)
+      run: cargo clippy --all-targets -- -W clippy::all
+      
+    - name: Run unit tests only
+      run: cargo test --bin doksnet 
