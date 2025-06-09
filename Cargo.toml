@@ -1,10 +1,16 @@
 [package]
 name = "doksnet"
 version = "1.1.0"
-edition = "2024"
+edition = "2021"
 authors = ["Fedor Tkachenko <vzdbovich@gmail.com>"]
-description = "A CLI tool for documentation-code mapping verification"
+description = "A CLI tool for documentation-code mapping verification using cryptographic hashes"
 license = "MIT"
+repository = "https://github.com/Pulko/doksnet"
+homepage = "https://github.com/Pulko/doksnet"
+documentation = "https://docs.rs/doksnet"
+readme = "README.md"
+keywords = ["documentation", "verification", "cli", "mapping", "hash"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "doksnet"
