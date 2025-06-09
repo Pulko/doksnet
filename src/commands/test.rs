@@ -90,7 +90,7 @@ pub fn handle() -> Result<()> {
             }
         }
 
-        println!("\n💡 Tip: Use 'doksnet update' to fix broken mappings");
+        println!("\n💡 Tip: Use 'doksnet edit <id>' to fix broken mappings");
 
         // Exit with error code for CI/CD integration
         process::exit(1);
