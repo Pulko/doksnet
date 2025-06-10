@@ -36,6 +36,12 @@ cd doksnet
 cargo install --path .
 ```
 
+### From GitHub Pipeline (CI/CD)
+
+```yaml
+  - uses: Pulko/doksnet@v1
+```
+
 ## 📋 Commands Overview
 
 | Command | Purpose | Interactive | CI/CD Safe |
@@ -238,14 +244,6 @@ jobs:
       - uses: Pulko/doksnet@v1
 ```
 
-**Manual Installation:**
-
-```bash
-# In your CI/CD pipeline
-cargo install doksnet
-doksnet test  # Fails build if docs/code drift apart
-```
-
 ## 🎯 Use Cases
 
 - **API Documentation**: Link examples in README to actual implementation
@@ -321,12 +319,6 @@ jobs:
   with:
     command: 'remove-failed'
 ```
-
-**Benefits:**
-- ✅ **Zero setup** - No need to install Rust/Cargo
-- ⚡ **Fast** - Cached dependencies, optimized for CI
-- 🔧 **Flexible** - Configurable commands and error handling
-- 🌍 **Cross-platform** - Works on Linux, Windows, macOS
 
 ## 🚧 Future Extensions
 

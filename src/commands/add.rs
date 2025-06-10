@@ -16,7 +16,6 @@ pub fn handle() -> Result<()> {
     println!("📝 Adding new documentation-code mapping");
     println!("Current default documentation file: {}", config.default_doc);
 
-    // Get documentation partition
     let doc_partition_str: String = Input::new()
         .with_prompt("Documentation partition (e.g., README.md:10-20 or README.md:10-20@5-15)")
         .with_initial_text(format!("{}:", config.default_doc))
@@ -45,7 +44,6 @@ pub fn handle() -> Result<()> {
         return Ok(());
     }
 
-    // Get code partition
     let code_partition_str: String = Input::new()
         .with_prompt("Code partition (e.g., src/main.rs:15-30 or src/lib.rs:5-25@10-50)")
         .interact_text()?;
@@ -73,7 +71,6 @@ pub fn handle() -> Result<()> {
         return Ok(());
     }
 
-    // Optional description
     let description: String = Input::new()
         .with_prompt("Optional description for this mapping")
         .allow_empty(true)
@@ -85,11 +82,9 @@ pub fn handle() -> Result<()> {
         Some(description.trim().to_string())
     };
 
-    // Generate hashes
     let doc_hash = hash_content(&doc_content);
     let code_hash = hash_content(&code_content);
 
-    // Create mapping
     let mapping = Mapping {
         id: Uuid::new_v4().to_string(),
         doc_partition: doc_partition_str,

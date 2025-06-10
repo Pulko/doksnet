@@ -6,7 +6,6 @@ use crate::hash::verify_hash;
 use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
-    // Find the .doks file
     let doks_file_path = DoksConfig::find_doks_file()
         .ok_or_else(|| anyhow!("No .doks file found. Run 'doksnet new' first."))?;
 
@@ -22,7 +21,6 @@ pub fn handle() -> Result<()> {
         config.mappings.len()
     );
 
-    // Identify failed mappings
     let mut failed_indices = Vec::new();
     let mut failed_details = Vec::new();
 
@@ -78,7 +76,6 @@ pub fn handle() -> Result<()> {
         .interact()?;
 
     if confirm {
-        // Remove failed mappings (iterate in reverse to preserve indices)
         for &index in failed_indices.iter().rev() {
             config.mappings.remove(index);
         }
@@ -104,14 +101,13 @@ pub fn handle() -> Result<()> {
 }
 
 fn test_partition_validity(partition_str: &str, expected_hash: &str) -> bool {
-    // Try to parse and extract content, then verify hash
     match Partition::parse(partition_str) {
         Ok(partition) => {
             match partition.extract_content() {
                 Ok(content) => verify_hash(&content, expected_hash),
-                Err(_) => false, // File not found or content extraction failed
+                Err(_) => false,
             }
         }
-        Err(_) => false, // Partition parsing failed
+        Err(_) => false,
     }
 }

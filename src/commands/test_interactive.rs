@@ -6,7 +6,6 @@ use crate::hash::{hash_content, verify_hash};
 use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
-    // Find the .doks file
     let doks_file_path = DoksConfig::find_doks_file()
         .ok_or_else(|| anyhow!("No .doks file found. Run 'doksnet new' first."))?;
 
@@ -28,7 +27,6 @@ pub fn handle() -> Result<()> {
     let mut passed_count = 0;
     let mut modified = false;
 
-    // Test all mappings first
     for (index, mapping) in config.mappings.iter().enumerate() {
         let mapping_num = index + 1;
         println!(
@@ -45,7 +43,6 @@ pub fn handle() -> Result<()> {
         println!("   📄 Doc: {}", mapping.doc_partition);
         println!("   💻 Code: {}", mapping.code_partition);
 
-        // Test both partitions
         let doc_result =
             test_partition_detailed(&mapping.doc_partition, &mapping.doc_hash, "documentation");
         let code_result =
@@ -65,7 +62,6 @@ pub fn handle() -> Result<()> {
         println!();
     }
 
-    // Summary
     println!("📊 Test Results Summary:");
     println!("   ✅ Passed: {}/{}", passed_count, config.mappings.len());
     println!(
@@ -80,15 +76,13 @@ pub fn handle() -> Result<()> {
         return Ok(());
     }
 
-    // Handle failed mappings interactively
     println!("🛠️  Let's fix the failed mappings...");
 
     for (_original_index, mapping, doc_result, code_result) in failed_mappings {
-        // Find current index (may have changed due to removals)
         let current_index = config.mappings.iter().position(|m| m.id == mapping.id);
 
         if current_index.is_none() {
-            continue; // Mapping was already removed
+            continue;
         }
         let current_index = current_index.unwrap();
 
@@ -103,10 +97,8 @@ pub fn handle() -> Result<()> {
         println!("📄 Doc: {}", mapping.doc_partition);
         println!("💻 Code: {}", mapping.code_partition);
 
-        // Show what changed
         show_changes(&mapping, &doc_result, &code_result)?;
 
-        // Ask what to do
         let options = vec![
             "Update hashes (accept current content)",
             "Edit this mapping",
@@ -122,7 +114,6 @@ pub fn handle() -> Result<()> {
 
         match action {
             0 => {
-                // Update hashes
                 if let Err(ref _e) = doc_result {
                     if let Some(content) = extract_content_if_possible(&mapping.doc_partition) {
                         config.mappings[current_index].doc_hash = hash_content(&content);
@@ -138,14 +129,12 @@ pub fn handle() -> Result<()> {
                 modified = true;
             }
             1 => {
-                // Edit mapping - redirect to edit functionality
                 println!(
                     "💡 Use 'doksnet edit {}' to edit this mapping",
                     &mapping.id[..8]
                 );
             }
             2 => {
-                // Remove mapping
                 let confirm = Confirm::new()
                     .with_prompt("Are you sure you want to remove this mapping?")
                     .default(false)
@@ -157,15 +146,13 @@ pub fn handle() -> Result<()> {
                     modified = true;
                 }
             }
-            3 => {
-                // Skip
+            3 => {  
                 println!("⏭️  Skipped");
             }
             _ => unreachable!(),
         }
     }
 
-    // Save changes if any were made
     if modified {
         config.to_file(&doks_file_path)?;
         println!("\n💾 Changes saved to .doks file");
@@ -181,19 +168,16 @@ fn test_partition_detailed(
     expected_hash: &str,
     content_type: &str,
 ) -> Result<(), String> {
-    // Parse the partition
     let partition = match Partition::parse(partition_str) {
         Ok(p) => p,
         Err(e) => return Err(format!("Failed to parse {} partition: {}", content_type, e)),
     };
 
-    // Extract content
     let content = match partition.extract_content() {
         Ok(c) => c,
         Err(e) => return Err(format!("Failed to extract {} content: {}", content_type, e)),
     };
 
-    // Verify hash
     if !verify_hash(&content, expected_hash) {
         let current_hash = hash_content(&content);
         return Err(format!(

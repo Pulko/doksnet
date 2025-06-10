@@ -5,27 +5,18 @@ pub const DOKS_FILE_NAME: &str = ".doks";
 
 #[derive(Debug, Clone)]
 pub struct DoksConfig {
-    /// Version of the doks format
     pub version: String,
-    /// Default documentation file
     pub default_doc: String,
-    /// Mappings between documentation and code partitions
     pub mappings: Vec<Mapping>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Mapping {
-    /// Unique identifier for this mapping
     pub id: String,
-    /// Documentation partition reference
     pub doc_partition: String,
-    /// Code partition reference
     pub code_partition: String,
-    /// Hash of the documentation content
     pub doc_hash: String,
-    /// Hash of the code content
     pub code_hash: String,
-    /// Optional description
     pub description: Option<String>,
 }
 
@@ -57,7 +48,6 @@ impl DoksConfig {
         for line in content.lines() {
             let line = line.trim();
 
-            // Skip comments and empty lines
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
@@ -108,7 +98,6 @@ impl DoksConfig {
     pub fn to_string(&self) -> String {
         let mut content = String::new();
 
-        // Header
         content.push_str("# .doks v2 - Compact format\n");
         content.push_str(&format!("version={}\n", self.version));
         content.push_str(&format!("default_doc={}\n", self.default_doc));
@@ -219,11 +208,9 @@ mod tests {
         let mut config = DoksConfig::new("README.md".to_string());
         config.add_mapping(create_test_mapping());
 
-        // Write to file
         config.to_file(&file_path).unwrap();
         assert!(file_path.exists());
 
-        // Read from file
         let loaded_config = DoksConfig::from_file(&file_path).unwrap();
         assert_eq!(loaded_config.version, config.version);
         assert_eq!(loaded_config.default_doc, config.default_doc);
@@ -242,24 +229,19 @@ mod tests {
         let dir = tempdir().unwrap();
         let doks_path = dir.path().join(DOKS_FILE_NAME);
 
-        // Change to temp directory
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(&dir).unwrap();
 
-        // No .doks file exists
         assert!(DoksConfig::find_doks_file().is_none());
 
-        // Create .doks file
         fs::write(&doks_path, "version=0.1.0\ndefault_doc=README.md\n").unwrap();
         let found = DoksConfig::find_doks_file();
         assert!(found.is_some());
 
-        // Check that the filename matches (handle potential symlink differences on macOS)
         let found_path = found.unwrap();
         assert!(found_path.ends_with(DOKS_FILE_NAME));
         assert!(found_path.exists());
 
-        // Restore original directory
         std::env::set_current_dir(original_dir).unwrap();
     }
 

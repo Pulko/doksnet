@@ -6,18 +6,14 @@ use crate::hash::hash_content;
 use crate::partition::Partition;
 
 pub fn handle(id: String) -> Result<()> {
-    // Find the .doks file
     let doks_file_path = DoksConfig::find_doks_file()
         .ok_or_else(|| anyhow!("No .doks file found. Run 'doksnet new' first."))?;
-
     let mut config = DoksConfig::from_file(&doks_file_path)?;
-
     if config.mappings.is_empty() {
         println!("📭 No mappings found. Use 'doksnet add' to create some first.");
         return Ok(());
     }
 
-    // Find the mapping by ID (allow partial matching)
     let mapping_index = config
         .mappings
         .iter()
@@ -37,7 +33,6 @@ pub fn handle(id: String) -> Result<()> {
     }
     println!();
 
-    // What would you like to edit?
     let options = vec![
         "Documentation partition",
         "Code partition",
@@ -67,7 +62,6 @@ pub fn handle(id: String) -> Result<()> {
         _ => unreachable!(),
     }
 
-    // Save the updated config
     config.to_file(&doks_file_path)?;
     println!("✅ Successfully updated mapping!");
 
@@ -84,7 +78,6 @@ fn edit_doc_partition(mapping: &mut crate::config::Mapping) -> Result<()> {
         .interact_text()?;
 
     if new_partition != mapping.doc_partition {
-        // Validate and extract content
         let partition = Partition::parse(&new_partition)?;
         let content = partition
             .extract_content()
@@ -127,7 +120,6 @@ fn edit_code_partition(mapping: &mut crate::config::Mapping) -> Result<()> {
         .interact_text()?;
 
     if new_partition != mapping.code_partition {
-        // Validate and extract content
         let partition = Partition::parse(&new_partition)?;
         let content = partition
             .extract_content()

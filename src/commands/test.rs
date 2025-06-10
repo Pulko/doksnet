@@ -6,7 +6,6 @@ use crate::hash::{hash_content, verify_hash};
 use crate::partition::Partition;
 
 pub fn handle() -> Result<()> {
-    // Find the .doks file
     let doks_file_path = DoksConfig::find_doks_file()
         .ok_or_else(|| anyhow!("No .doks file found. Run 'doksnet new' first."))?;
 
@@ -43,10 +42,8 @@ pub fn handle() -> Result<()> {
         println!("   📄 Doc: {}", mapping.doc_partition);
         println!("   💻 Code: {}", mapping.code_partition);
 
-        // Test documentation partition
         let doc_result = test_partition(&mapping.doc_partition, &mapping.doc_hash, "documentation");
 
-        // Test code partition
         let code_result = test_partition(&mapping.code_partition, &mapping.code_hash, "code");
 
         match (doc_result, code_result) {
@@ -72,7 +69,6 @@ pub fn handle() -> Result<()> {
         println!();
     }
 
-    // Print summary
     println!("📊 Test Results Summary:");
     println!("   ✅ Passed: {}/{}", success_count, config.mappings.len());
     println!(
@@ -92,7 +88,6 @@ pub fn handle() -> Result<()> {
 
         println!("\n💡 Tip: Use 'doksnet edit <id>' to fix broken mappings");
 
-        // Exit with error code for CI/CD integration
         process::exit(1);
     } else {
         println!("\n🎉 All mappings are up to date!");
@@ -102,7 +97,6 @@ pub fn handle() -> Result<()> {
 }
 
 fn test_partition(partition_str: &str, expected_hash: &str, content_type: &str) -> Result<()> {
-    // Parse the partition
     let partition = Partition::parse(partition_str).map_err(|e| {
         anyhow!(
             "Failed to parse {} partition '{}': {}",
@@ -112,12 +106,10 @@ fn test_partition(partition_str: &str, expected_hash: &str, content_type: &str) 
         )
     })?;
 
-    // Extract content
     let content = partition
         .extract_content()
         .map_err(|e| anyhow!("Failed to extract {} content: {}", content_type, e))?;
 
-    // Verify hash
     if !verify_hash(&content, expected_hash) {
         let current_hash = hash_content(&content);
         return Err(anyhow!(

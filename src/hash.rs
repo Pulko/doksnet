@@ -1,10 +1,8 @@
-/// Generate a hash for the given content using Blake3
 pub fn hash_content(content: &str) -> String {
     let hash = blake3::hash(content.as_bytes());
     hash.to_hex().to_string()
 }
 
-/// Verify if the content matches the expected hash
 pub fn verify_hash(content: &str, expected_hash: &str) -> bool {
     let actual_hash = hash_content(content);
     actual_hash == expected_hash
@@ -19,7 +17,7 @@ mod tests {
         let content = "Hello, world!";
         let hash = hash_content(content);
         assert!(!hash.is_empty());
-        assert_eq!(hash.len(), 64); // Blake3 produces 256-bit (32 byte) hashes, 64 hex characters
+        assert_eq!(hash.len(), 64);
     }
 
     #[test]
@@ -49,8 +47,8 @@ mod tests {
     #[test]
     fn test_whitespace_sensitivity() {
         let content1 = "Hello world";
-        let content2 = "Hello  world"; // Extra space
-        let content3 = "Hello world\n"; // Trailing newline
+        let content2 = "Hello  world";
+        let content3 = "Hello world\n";
 
         let hash1 = hash_content(content1);
         let hash2 = hash_content(content2);

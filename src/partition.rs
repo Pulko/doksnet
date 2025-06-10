@@ -11,9 +11,6 @@ pub struct Partition {
 }
 
 impl Partition {
-    /// Parse a partition string in the format:
-    /// <relative_path>:<start_line>-<end_line>@<start_col>-<end_col>
-    /// Line or column ranges can be optional
     pub fn parse(partition_str: &str) -> Result<Self> {
         if partition_str.trim().is_empty() {
             return Err(anyhow!("Partition string cannot be empty"));
@@ -27,7 +24,6 @@ impl Partition {
         }
 
         if parts.len() == 1 {
-            // Just a file path, no ranges
             return Ok(Partition {
                 file_path,
                 start_line: None,
@@ -94,7 +90,6 @@ impl Partition {
         })
     }
 
-    /// Extract content from the file based on the partition specification
     pub fn extract_content(&self) -> Result<String> {
         let file_path = Path::new(&self.file_path);
         if !file_path.exists() {
@@ -123,28 +118,24 @@ impl Partition {
                     let line_content = match (self.start_col, self.end_col) {
                         (Some(start_col), Some(end_col)) => {
                             if i == start - 1 && i == end - 1 {
-                                // Single line with column range
                                 let chars: Vec<char> = line.chars().collect();
                                 if start_col > chars.len() || end_col > chars.len() {
                                     return Err(anyhow!("Column numbers exceed line length"));
                                 }
                                 chars[(start_col - 1)..end_col].iter().collect()
                             } else if i == start - 1 {
-                                // First line with start column
                                 let chars: Vec<char> = line.chars().collect();
                                 if start_col > chars.len() {
                                     return Err(anyhow!("Start column exceeds line length"));
                                 }
                                 chars[(start_col - 1)..].iter().collect()
                             } else if i == end - 1 {
-                                // Last line with end column
                                 let chars: Vec<char> = line.chars().collect();
                                 if end_col > chars.len() {
                                     return Err(anyhow!("End column exceeds line length"));
                                 }
                                 chars[..end_col].iter().collect()
                             } else {
-                                // Middle lines, full content
                                 line.to_string()
                             }
                         }
@@ -159,13 +150,11 @@ impl Partition {
                 Ok(result)
             }
             _ => {
-                // No line range specified, return entire file
                 Ok(content)
             }
         }
     }
 
-    /// Convert the partition back to string format
     #[allow(dead_code)]
     #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
@@ -257,15 +246,12 @@ mod tests {
 
     #[test]
     fn test_parse_invalid_format() {
-        // Empty string should error because no file path
         let result = Partition::parse("");
         assert!(result.is_err());
 
-        // Invalid line numbers should error
         assert!(Partition::parse("file.txt:abc").is_err());
         assert!(Partition::parse("file.txt:10@abc").is_err());
 
-        // This is actually valid parsing (validation happens during extraction)
         assert!(Partition::parse("file.txt:10-5").is_ok());
     }
 
@@ -378,7 +364,6 @@ mod tests {
         let file_path = dir.path().join("test.txt");
         fs::write(&file_path, "line1\nline2").unwrap();
 
-        // Zero-indexed line numbers should fail
         let partition = Partition {
             file_path: file_path.to_string_lossy().to_string(),
             start_line: Some(0),
@@ -388,7 +373,6 @@ mod tests {
         };
         assert!(partition.extract_content().is_err());
 
-        // Line numbers exceeding file length should fail
         let partition = Partition {
             file_path: file_path.to_string_lossy().to_string(),
             start_line: Some(1),
@@ -398,7 +382,6 @@ mod tests {
         };
         assert!(partition.extract_content().is_err());
 
-        // Start line > end line should fail
         let partition = Partition {
             file_path: file_path.to_string_lossy().to_string(),
             start_line: Some(2),
