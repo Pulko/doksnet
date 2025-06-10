@@ -188,12 +188,13 @@ The `.doks` file uses a compact, machine-optimized format:
 
 ```
 # .doks - Mapping doks to code 
-version=0.2.0
 default_doc=README.md
 
 # Format: id|doc_partition|code_partition|doc_hash|code_hash|description
-a1b2c3d4|README.md:10-15|src/lib.rs:20-35|abc123def456...|789xyz012abc...|API usage example
-main-func|README.md:25-30|src/main.rs:1-10|fedcba987654...|123456789abc...|Main function example
+d9639aad-b4c9-4e47-94a4-ef6a1ad25f63|README.md:18@3-33|src/app/page.tsx:95|23bb378a2db6d108b38097af5901d3360452fbdd3593fb5a31cfc3974b76c6b1|2864eeedc71061f92ae67be5a7b1617107b70a1fd0aa4515b985df0ce2f6ec9c|Deploying application on Vercel
+d0766781-70f9-45a4-a866-f999cd2d040d|README.md:8|src/app/create/page.tsx:360-902|4362febe3c26828db16c3ed873fdd57909da39866371652ae68310ee4648bc38|f870ce178ec7c66cb7e109510eb6b0637a31a73505221d8ebf147a252545fe88|Form for portfolio creating
+071e85a5-4557-4c1f-aeaf-319a1d0f69c2|README.md:53|package.json:6|cc9fd37fa5cca2219e39826ddaf515b337d376becf2c207b9b5293b51e42b7c3|6235c68106534c519d0b3b0a8d2cd38bc139ef2580efd04a47f427ec2b47fd7c|Start the application
+
 ```
 
 **Benefits of the compact format:**
