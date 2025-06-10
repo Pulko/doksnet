@@ -1,3 +1,6 @@
+
+<img width="881" alt="Screenshot 2025-06-10 at 15 35 24" src="https://github.com/user-attachments/assets/7a20508c-8640-4a51-b371-bf5692eaea7c" />
+
 # 🦀 doksnet
 
 [![CI](https://github.com/Pulko/doksnet/workflows/CI/badge.svg)](https://github.com/Pulko/doksnet/actions/workflows/ci.yml)
