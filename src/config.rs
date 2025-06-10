@@ -5,7 +5,6 @@ pub const DOKS_FILE_NAME: &str = ".doks";
 
 #[derive(Debug, Clone)]
 pub struct DoksConfig {
-    pub version: String,
     pub default_doc: String,
     pub mappings: Vec<Mapping>,
 }
@@ -23,7 +22,6 @@ pub struct Mapping {
 impl DoksConfig {
     pub fn new(default_doc: String) -> Self {
         Self {
-            version: "0.1.0".to_string(),
             default_doc,
             mappings: Vec::new(),
         }
@@ -41,7 +39,6 @@ impl DoksConfig {
     }
 
     pub fn parse(content: &str) -> Result<Self> {
-        let mut version = "0.1.0".to_string();
         let mut default_doc = String::new();
         let mut mappings = Vec::new();
 
@@ -52,9 +49,7 @@ impl DoksConfig {
                 continue;
             }
 
-            if line.starts_with("version=") {
-                version = line.strip_prefix("version=").unwrap().to_string();
-            } else if line.starts_with("default_doc=") {
+            if line.starts_with("default_doc=") {
                 default_doc = line.strip_prefix("default_doc=").unwrap().to_string();
             } else if line.contains('|') {
                 // Parse mapping line: id|doc_partition|code_partition|doc_hash|code_hash|description
@@ -88,7 +83,6 @@ impl DoksConfig {
         }
 
         Ok(Self {
-            version,
             default_doc,
             mappings,
         })
@@ -98,8 +92,7 @@ impl DoksConfig {
     pub fn to_string(&self) -> String {
         let mut content = String::new();
 
-        content.push_str("# .doks v2 - Compact format\n");
-        content.push_str(&format!("version={}\n", self.version));
+        content.push_str("# .doks - Mapping doks to code \n");
         content.push_str(&format!("default_doc={}\n", self.default_doc));
         content.push('\n');
 
@@ -169,7 +162,6 @@ mod tests {
     #[test]
     fn test_doks_config_new() {
         let config = DoksConfig::new("README.md".to_string());
-        assert_eq!(config.version, "0.1.0");
         assert_eq!(config.default_doc, "README.md");
         assert!(config.mappings.is_empty());
     }
@@ -212,7 +204,6 @@ mod tests {
         assert!(file_path.exists());
 
         let loaded_config = DoksConfig::from_file(&file_path).unwrap();
-        assert_eq!(loaded_config.version, config.version);
         assert_eq!(loaded_config.default_doc, config.default_doc);
         assert_eq!(loaded_config.mappings.len(), 1);
         assert_eq!(loaded_config.mappings[0].id, config.mappings[0].id);
@@ -234,7 +225,7 @@ mod tests {
 
         assert!(DoksConfig::find_doks_file().is_none());
 
-        fs::write(&doks_path, "version=0.1.0\ndefault_doc=README.md\n").unwrap();
+        fs::write(&doks_path, "default_doc=README.md\n").unwrap();
         let found = DoksConfig::find_doks_file();
         assert!(found.is_some());
 
@@ -256,7 +247,7 @@ mod tests {
         config.to_file(&file_path).unwrap();
 
         let content = fs::read_to_string(&file_path).unwrap();
-        assert!(content.contains("version=0.1.0"));
+        assert!(content.contains("# .doks"));
         assert!(content.contains("default_doc=README.md"));
         assert!(content
             .contains("test-id-123|README.md:1-5|src/main.rs:10-20|abc123|def456|Test mapping"));
@@ -284,8 +275,7 @@ mod tests {
     #[test]
     fn test_parse_compact_format() {
         let content = r#"
-# .doks v2 - Compact format
-version=0.1.0
+# .doks
 default_doc=README.md
 
 # Format: id|doc_partition|code_partition|doc_hash|code_hash|description
@@ -294,7 +284,6 @@ test-2|docs/api.md:5-10|src/lib.rs:1-10|fedcba|654321|
         "#;
 
         let config = DoksConfig::parse(content).unwrap();
-        assert_eq!(config.version, "0.1.0");
         assert_eq!(config.default_doc, "README.md");
         assert_eq!(config.mappings.len(), 2);
 
@@ -314,7 +303,7 @@ test-2|docs/api.md:5-10|src/lib.rs:1-10|fedcba|654321|
         let result = DoksConfig::parse(content);
         assert!(result.is_err());
 
-        let content = "version=0.1.0\n# missing default_doc";
+        let content = "# missing default_doc";
         let result = DoksConfig::parse(content);
         assert!(result.is_err());
     }

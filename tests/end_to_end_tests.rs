@@ -171,7 +171,7 @@ fn add_realistic_mapping(dir: &tempfile::TempDir) {
     let code_hash = blake3::hash(code_content.as_bytes()).to_hex().to_string();
 
     let doks_content = format!(
-        r#"# .doks v2 - Compact format
+        r#"# .doks - Mapping doks to code 
 version=0.1.0
 default_doc=README.md
 
@@ -293,7 +293,7 @@ fn add_multiple_mappings(dir: &tempfile::TempDir) {
         .to_string();
 
     let doks_content = format!(
-        r#"# .doks v2 - Compact format
+        r#"# .doks - Mapping doks to code 
 version=0.1.0
 default_doc=README.md
 

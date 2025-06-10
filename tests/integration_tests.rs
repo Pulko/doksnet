@@ -46,7 +46,6 @@ fn test_new_command_creates_doks_file() {
     assert!(doks_path.exists());
 
     let content = fs::read_to_string(doks_path).unwrap();
-    assert!(content.contains("version=0.1.0"));
     assert!(content.contains("default_doc=README.md"));
 }
 
@@ -258,7 +257,7 @@ fn test_test_command_with_changed_content() {
 // Helper functions
 
 fn create_basic_doks_file(dir: &tempfile::TempDir) {
-    let doks_content = r#"# .doks v2 - Compact format
+    let doks_content = r#"# .doks - Mapping doks to code 
 version=0.1.0
 default_doc=README.md
 
@@ -312,7 +311,7 @@ fn create_doks_with_mapping(dir: &tempfile::TempDir, doc_partition: &str, code_p
     let code_hash = blake3::hash(code_content.as_bytes()).to_hex().to_string();
 
     let doks_content = format!(
-        r#"# .doks v2 - Compact format
+        r#"# .doks - Mapping doks to code 
 version=0.1.0
 default_doc=README.md
 

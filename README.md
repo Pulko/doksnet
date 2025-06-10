@@ -187,7 +187,7 @@ Partitions use this lightweight format to reference file ranges:
 The `.doks` file uses a compact, machine-optimized format:
 
 ```
-# .doks v2 - Compact format
+# .doks - Mapping doks to code 
 version=0.2.0
 default_doc=README.md
 

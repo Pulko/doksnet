@@ -48,7 +48,7 @@ mod command_unit_tests {
         let dir = tempdir().unwrap();
 
         // Create a .doks file manually and verify it parses correctly
-        let doks_content = r#"# .doks v2 - Compact format
+        let doks_content = r#"# .doks - Mapping doks to code 
 version=0.1.0
 default_doc=README.md
 
