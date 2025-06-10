@@ -73,7 +73,7 @@ pub fn handle() -> Result<()> {
     if success_count > 0 {
         println!("   ✅ Passed: {}/{}", success_count, config.mappings.len());
     }
-    if failed_mappings.len() > 0 {
+    if !failed_mappings.is_empty() {
         println!(
             "   ❌ Failed: {}/{}",
             failed_mappings.len(),
