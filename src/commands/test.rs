@@ -70,12 +70,16 @@ pub fn handle() -> Result<()> {
     }
 
     println!("📊 Test Results Summary:");
-    println!("   ✅ Passed: {}/{}", success_count, config.mappings.len());
-    println!(
-        "   ❌ Failed: {}/{}",
-        failed_mappings.len(),
-        config.mappings.len()
-    );
+    if success_count > 0 {
+        println!("   ✅ Passed: {}/{}", success_count, config.mappings.len());
+    }
+    if failed_mappings.len() > 0 {
+        println!(
+            "   ❌ Failed: {}/{}",
+            failed_mappings.len(),
+            config.mappings.len()
+        );
+    }
 
     if !failed_mappings.is_empty() {
         println!("\n🚨 Failed Mappings Details:");

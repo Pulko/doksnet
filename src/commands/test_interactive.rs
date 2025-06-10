@@ -63,12 +63,16 @@ pub fn handle() -> Result<()> {
     }
 
     println!("📊 Test Results Summary:");
-    println!("   ✅ Passed: {}/{}", passed_count, config.mappings.len());
-    println!(
-        "   ❌ Failed: {}/{}",
-        failed_mappings.len(),
-        config.mappings.len()
-    );
+    if passed_count > 0 {
+        println!("   ✅ Passed: {}/{}", passed_count, config.mappings.len());
+    }
+    if failed_mappings.len() > 0 {
+        println!(
+            "   ❌ Failed: {}/{}",
+            failed_mappings.len(),
+            config.mappings.len()
+        );
+    }
     println!();
 
     if failed_mappings.is_empty() {
