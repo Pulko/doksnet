@@ -12,13 +12,9 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    New {
-        path: Option<PathBuf>,
-    },
+    New { path: Option<PathBuf> },
     Add,
-    Edit {
-        id: String,
-    },
+    Edit { id: String },
     RemoveFailed,
     Test,
     TestInteractive,

@@ -102,12 +102,10 @@ pub fn handle() -> Result<()> {
 
 fn test_partition_validity(partition_str: &str, expected_hash: &str) -> bool {
     match Partition::parse(partition_str) {
-        Ok(partition) => {
-            match partition.extract_content() {
-                Ok(content) => verify_hash(&content, expected_hash),
-                Err(_) => false,
-            }
-        }
+        Ok(partition) => match partition.extract_content() {
+            Ok(content) => verify_hash(&content, expected_hash),
+            Err(_) => false,
+        },
         Err(_) => false,
     }
 }

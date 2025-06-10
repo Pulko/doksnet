@@ -149,9 +149,7 @@ impl Partition {
                 }
                 Ok(result)
             }
-            _ => {
-                Ok(content)
-            }
+            _ => Ok(content),
         }
     }
 

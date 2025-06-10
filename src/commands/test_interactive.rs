@@ -150,7 +150,7 @@ pub fn handle() -> Result<()> {
                     modified = true;
                 }
             }
-            3 => {  
+            3 => {
                 println!("⏭️  Skipped");
             }
             _ => unreachable!(),
